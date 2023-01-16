@@ -2,9 +2,9 @@
 
 ## Expected schedule
 
-We meet on 25-27th January 2023
-On 25th and 27th January we meet via zoom
-On 27th january we meet in-person
+We meet on 25-27th January 2023    
+On 25th and 27th January we meet via zoom     
+On 27th January we meet in-person     
 We will meet between 10:00 and 15:00 CET in two sessions:
 - 10:00 - 11:50 - morning session    
 - 13:10 - 15:00 - afternoon session. 
