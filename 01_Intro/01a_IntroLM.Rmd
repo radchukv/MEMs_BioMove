@@ -13,16 +13,34 @@ output:
 
 ```{css, echo = FALSE}
 .reveal ul {
-   margin-bottom: -10px;
+  font-size: 30px;
 }
 .reveal ol {
-   margin-bottom: -20px;
+  font-size: 30px;
+  margin-bottom: -10px;
 }
 .reveal p {
-   margin-bottom: -10px;
+ font-size: 30px;
+  margin-bottom: -10px;
 }
 .reveal  pre {
+  font-size: 14px;
+  max-height: 300px;
+  overflow-y: auto;
   margin-bottom: -3px;
+}
+.reveal code.r{
+  font-size: 14px;
+}
+
+pre[class] {
+  max-height: 100px;
+}
+
+.scroll-100 {
+  max-height: 100px;
+  overflow-y: auto;
+  background-color: inherit;
 }
 ```
 
@@ -32,6 +50,7 @@ output:
 knitr::opts_chunk$set(echo = FALSE)
 library(plotrix)
 library(tidyverse)
+library(ggplot2)
 ```
 
 # Orga / Admin
@@ -52,7 +71,7 @@ Day 1:
 - Intro to linear mixed-effects model     
 - Random intercept and random slope models     
 
-Day 2: 
+Day 2:   
 
 - Model diagnostics for mixed-effects models    
 - Model inference, hypothesis testing     
@@ -69,7 +88,7 @@ Day 3:
 # Linear model
 
 
-*Repetition is the mother of all skill*
+<span style= 'font-size: 50px; color:orange'>*Repetition is the mother of all skill*</span>
 
 
 # Graphical representation
@@ -139,19 +158,31 @@ text(x = -2.5, y = 0, label = expression(y[i]), cex = 2)
 # Assumtions of a linear model
 
 - Normal distribution of residuals     
-*in fact: normality of residuals at each X value*
+**in fact: normality of residuals at each X value**
 - Additive error model
+That means that errors cannot be related to the predictor variable in any other way than additive. In other words, the below models violate this assumption:
 $$y = \alpha + \beta\times x \times  \epsilon$$
 $$y = \alpha + \beta\times x^\epsilon$$
+
+# Assumtions of a linear model
+
 - iid: residuals are independent, identically distributed.
 No correlation between residuals, e.g. due to autocorrelation
 $Cov(\epsilon_i, \epsilon_j) = 0$
-- Homoscedasticity: homogeneity of the variance of residuals     
-*consider giving more details here, with plots*      
-__to myself: perhaps give this all with more details, and plots__
+- Homoscedasticity: homogeneity of the variance of residuals  
+```{r heterosced example, fig.align='center', out.height='20%'}
+group1 <- rnorm(20, 2, sd = 1)
+group2 <- rnorm(20, 2, sd = 3)
+group3 <- rnorm(20, 2, sd = 4)
+
+dat <- data.frame(Location = c(rep('Loc1', 20), rep('Loc2', 20), rep('Loc3', 20)), Weight = c(group1, group2, group3))
+ggplot(dat, aes(x = Location, y = Weight)) +
+  geom_boxplot() +
+  geom_point(col = 'orange') + theme_bw()
+```
 
 # Before we go to an exercise and fit a linear model in R     
-<span style = 'color:orange'>*Repetition is the mother of all skill*</span>    
+<span style = 'color:orange; font-size:50px;'>*Repetition is the mother of all skill*</span>    
 
 #  Data types in R
 R deals with objects.   
@@ -240,7 +271,7 @@ Tibbles are 'improved' versions of data frames.
 Two main differences with data frames are how tiblles are printed and subset.   
 If printed a tibble displays the data for the first 10 rows and the data type for each column.   
 Difference in subsetting: `[` always returns another tibble, `[[` always returns a vector.  
-```{r tibble, echo = TRUE}
+```{r tibble, echo = TRUE, class.output="scroll-100"}
 as_tibble(iris)
 ```
 
