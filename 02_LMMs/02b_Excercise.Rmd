@@ -1,0 +1,38 @@
+---
+title: "Exercise: Mixed-effects models"
+author: "Radchuk Viktoriia"
+date: "2022-1-2"
+output:
+  html_document:
+    theme: default
+       
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+library(lme4)
+```
+
+# Small exercise for you
+Please use `lme4` package and the data we used in the last practical session (on the relation between phenology and temperature across species) to fit mixed-effect models with:      
+- random intercept, and          
+- random slope.      
+Produce the predictions with the fitted models and plot them.    
+
+Compare the obtained parameter estimates with those we obtained when using `spaMM` package.
+
+_Some help:_     
+- if you have difficulties reading in the data yourself, please see the .Rmd file from the practical session in which we were loading in the data and doing a bit of data preparation.        
+- for the syntax of mixed-effects models with `lme4` see the lecture material.
+
+
+
+
+
+
+
+
+

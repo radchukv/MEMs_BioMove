@@ -1,0 +1,331 @@
+---
+title: "Practical session: mixed effects models"
+author: "Radchuk Viktoriia"
+date: "2022-12-21"
+output:
+  html_document:
+    theme: default
+       
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+library(lme4)
+library(spaMM)
+library(glmmTMB)
+```
+
+# First: your examples 
+Before we go on with the exercise, let us devote some time to focus on the research questions you want to address in your own projects and what data you have for that. We will Friday devoted to analysing your own data. Please, each of you:
+
+- introduce shortly your data;   
+- your research question(s);    
+- have you already tried fitting models?   
+- have you encountered some difficulties, if so which?   
+
+# Read in the data
+
+We continue working with the data looking at the relation between phenology and temperature across species.   
+Q: how does temperature affects phenology (e.g. egg laying date) in birds?    
+
+```{r read-data, echo = TRUE}
+dat <- read.csv(file = here::here('data', 'dat_phen_temp_subs.csv'))
+head(dat)
+str(dat)
+```
+
+
+# Data preparation
+Again, convert character variables to factors. Also convert the Study ID to a factor because it technically also is a factor.
+
+```{r data prep, echo = TRUE, fig.align='center'}
+dat_fac <- dat %>%
+  mutate_if(is.character, as.factor) %>% 
+  mutate(ID = as.factor(ID))
+str(dat_fac)
+
+hist(dat_fac$det_Clim, xlab = 'Standardized temperature', main = NULL)
+hist(dat_fac$Trait_mean, xlab = 'Standardized phenology', main = NULL)
+
+```
+
+# Relation between temperature and phenology per study
+
+```{r relation per species, echo = TRUE, out.width= '100%', fig.align='center'}
+ggplot(dat_fac, aes(x = det_Clim, y = Trait_mean)) +
+  geom_point() + theme_bw() + 
+  facet_wrap(vars(ID)) +
+  xlab('Standardized temperature') +
+  ylab('Standardized phenology')
+
+```
+
+# Fit mixed effects model with random intercept
+We will use the library `spaMM` to fit mixed effects models.    
+The syntax is very similar to that of the library `lme4`.    
+However, it has some more advanced functionality, which we will need to demonstrate more complex things as we go on.    
+```{r mod-randInt, echo= TRUE}
+mod_randInt <- fitme(Trait_mean ~ det_Clim + (1|Species), data = dat_fac, method = 'ML')
+```
+<span style = "color:blue"> Note: `Method = 'ML'` is a default setting. This is equivalent to `lme4` syntax `REML = FALSE`. We will learn more about ML and REML in the next lecture!</span>
+
+## Interpreting model output
+```{r mod-randInt results, echo= TRUE}
+summary(mod_randInt)
+```
+- __Fixed effects__ is interpreted same way as fixed effects from the `lmer()` output. We see the estimates of our parameters, together with thee SErrors and t-values.   
+- __Random effects__ has a similar look as when using the `lmer()` function. We see $\lambda$, which is the variance of the random effect (in this case Species). We also see how many levels for this random effect we had: "number of groups: 7".
+- __Residual variance__ gives the residual variance $\phi$.
+Pay attention: the residual variance is much larger (several orders of magnitude) than that explained by random effect, i.e. compare $\lambda$ and $\phi$.
+- __Likelihood__ gives the log(Likelihood) of the model, which shows how well the model fits the data. Likelihood is used in calculation of AIC, which is often used for comparing different models.
+
+# Plot predictions
+<span style="color:blue">Disclaimer: before doing what we do here, i.e. interpret the model output and plot the predictions, we should actually look at model diagnostics to ensure that this model fits the data reasonably. But we will have a look at how to conduct model diagnostics in the next lecture</span>
+
+Predict to a new dataset, for this prepare the new dataset using the distributions of the variables (and factor levels) from the original dataset.   
+```{r preparePred, echo = TRUE, out.width = '100%', fig.align='center'}
+
+## look at how many years on average are there per study
+dur_study <- dat_fac %>% 
+  dplyr::group_by(., ID) %>% 
+  dplyr::summarize(Dur = length(Year))
+
+hist(dur_study$Dur, xlab = 'Study duration, years', main = NULL)
+median(dur_study$Dur)
+
+newd <- expand.grid('Species' = unique(dat_fac$Species), 
+                       det_Clim = seq(from = min(dat_fac$det_Clim), to = 
+                                    max(dat_fac$det_Clim), length.out = 25))
+
+head(newd)
+
+ 
+newd$pred_fix <- as.numeric(predict.HLfit(mod_randInt, newdata = newd, re.form = NA))
+newd$pred <- as.numeric(predict.HLfit(mod_randInt, newdata = newd)) ## by default re.form = NULL, i.e. including all random effects
+
+
+```
+Remember that to get more information on what each function is doing, you can call the help with "?" as `?predict.HLfit()`.
+
+```{r plotPred, echo = TRUE, out.width = '100%', fig.align='center'}
+ggplot(data = newd, aes(x = det_Clim, y = pred, group = Species, col = Species)) +
+  geom_line(lty = 3) + theme_bw() +
+  geom_line(data = newd, aes(x = det_Clim, y = pred_fix), col = 'black') +
+  xlab('Standardized temperature') + ylab('Standardized phenology')
+```
+
+So, basically, the variance around intercept across species is very small.        
+<span style="color:orange"> Any idea why this is the case?</span>    
+
+In some cases we do not want to show all the random effects but just want to show the fixed effect and the estimated variance around it. Let us see how to do it.    
+We use the same new data as was used to produce predictions.      
+```{r pred RandInt SE, echo = TRUE, out.width = '100%', fig.align='center'}
+CI_resp <- get_intervals(mod_randInt,newdata=newd, intervals = 'respVar')
+CI_fix <- get_intervals(mod_randInt,newdata=newd, intervals = 'fixefVar')
+newd <- cbind(newd, CI_resp, CI_fix)
+head(newd)
+```
+We extract the variance due to the fixed effect ('fixefVar') and the one that includes the uncertainty in (i) the fixed effects, (i) in the random effects and the residual variance, i.e. `respVar`.    
+
+
+```{r plot-pred RandInt SE, echo = TRUE, out.width = '100%', fig.align='center'}
+ggplot(data = newd, aes(x = det_Clim, y = pred_fix)) +
+  geom_line(lty = 3) + theme_bw() +
+  geom_ribbon(data = newd, aes(x = det_Clim, ymin = respVar_0.025, ymax = respVar_0.975), alpha = 0.3) +
+  geom_ribbon(data = newd, aes(x = det_Clim, ymin = fixefVar_0.025, ymax = fixefVar_0.975), fill = 'blue',  alpha = 0.3) +
+  xlab('Standardized temperature') + ylab('Standardized phenology')
+
+```
+The variance due to the fixed effect is shown in the shades of blue, and the total variance (respVar) in the grey shade.   
+
+# More non-independence in the data
+Not only observations for the same species may be more similar, but the observations coming from the same locations may be more correlated (for example because of a better habitat quality in some locations, which is not accounted for by our focus on temperature).    
+
+<p style="text-align:center;">
+<img src="img/Phen_Birds_MixedEff.jpg" height = "500"/>
+</p>
+
+Let us fit a mixed effects model with two independent random intercepts: the one for species and another one for location.   
+```{r mod-rand2Int, echo= TRUE}
+mod_rand2Int <- fitme(Trait_mean ~ det_Clim + (1|Species) + (1|Location), data = dat_fac)
+summary(mod_rand2Int)
+VarCorr(mod_rand2Int)$Variance[VarCorr(mod_rand2Int)$Group == 'Species'] 
+VarCorr(mod_rand2Int)$Variance[VarCorr(mod_rand2Int)$Group == 'Location']
+```
+We see that the parameter estimates for the fixed effects remain very similar to those estimated when using only Species as a random effect. However, the variance around both random effects (Species and Location) is comparable in its magnitude! Variance for the Species is `r VarCorr(mod_rand2Int)$Variance[VarCorr(mod_rand2Int)$Group == 'Species']` and for the Location it is `r VarCorr(mod_rand2Int)$Variance[VarCorr(mod_rand2Int)$Group == 'Location']`
+
+
+# Consider species explicitly    
+## Test for interaction between the species and temperature    
+
+<span style="color:orange"> What is a statistical interaction? What does it mean that species and temperature interact in their effect on morphology? </span>    
+
+
+### Fit a linear model with interaction
+```{r mod-spInteract, echo= TRUE}
+mod_SpInteract <- lm(Trait_mean ~ det_Clim + Species + det_Clim:Species, data = dat_fac)
+summary(mod_SpInteract)
+
+```
+
+### Fit a linear model with the additive impact of temperature and species
+<span style="color:orange"> What does it mean that species and temperature do not interact, i.e. act additively in their effect on morphology? </span>
+```{r mod-spAdd, echo= TRUE}
+mod_SpAdd <- lm(Trait_mean ~ det_Clim + Species, data = dat_fac)
+summary(mod_SpAdd)
+```
+
+## Likelihood-Ratio Test to assess significance of interaction
+```{r LRT_inter, echo= TRUE}
+
+anova(mod_SpAdd, mod_SpInteract, test = 'Chisq')
+```
+
+# <span style="color:red"> Repetition is the mother of all skill  </span>    
+
+So, we learnt already that the interaction between species and temperature is significant when fitting a linear model.     
+<span style="color:orange">Recall from the lecture whether we can grasp this interaction with a mixed-effects model?</span>
+
+
+# Fit mixed effects model with random slope
+```{r mod-randSlope, echo= TRUE}
+mod_randSl <- fitme(Trait_mean ~ det_Clim + (1 + det_Clim|Species), data = dat_fac)
+```
+
+## Interpreting the model output
+```{r mod-randSl results, echo= TRUE}
+summary(mod_randInt)
+summary(mod_randSl)
+```
+- As with the random intercept model, we have the estimates of __fixed effects__. Notice that the estimate of the fixed slope obtained with the random slope model is much smaller in its magnitude compared to the one estimated with the random intercept model.  
+- In the output we now have __'Random coefficients'__, which are estimates of random effects for the intercept ('Intercept') and the slope ('det_Clim'). We see both random variances for each of these terms as well as correlation between them.     
+- Similar as in the model with the random intercept the residual variance $\phi$ and log(Likelihood) are reported.   
+
+
+
+<span style = "color:orange"> Which model do you think fits the data better, the one with the random intercept or with random slope? </span>    
+<span style = "color:orange"> Do we need inclusion of the correlation between the random slope and random intercept? </span>     
+
+
+# Fit yourself the model without correlation between random slope and random intercept!
+```{r mod-randSlope no corr, include = FALSE}
+mod_randSl_noCor <- fitme(Trait_mean ~ det_Clim + (1| Species) + (0 + det_Clim|Species), data = dat_fac)
+summary(mod_randSl_noCor)
+mod_randSl_noCor_REML <- fitme(Trait_mean ~ det_Clim + (1| Species) + (0 + det_Clim|Species), data = dat_fac, method = 'REML')
+mod_randSl_REML <- fitme(Trait_mean ~ det_Clim + (1 + det_Clim|Species), data = dat_fac, method = 'REML')
+AIC(mod_randSl_REML); AIC(mod_randSl_noCor_REML)
+```
+
+# Plot predictions with random slope model
+We use the data generated for producing the predictions with the random intercept model, as that dataset includes all the predictors we also have in the model with the random slope.   
+```{r pred RandSlope, echo = TRUE, out.width = '100%', fig.align='center'}
+ 
+newd$pred_Sl_fix <- as.numeric(predict.HLfit(mod_randSl, newdata = newd, re.form = NA))
+newd$pred_Sl <- as.numeric(predict.HLfit(mod_randSl, newdata = newd))
+
+ggplot(data = newd, aes(x = det_Clim, y = pred_Sl, group = Species, col = Species)) +
+  geom_line(lty = 3) + theme_bw() +
+  geom_line(data = newd, aes(x = det_Clim, y = pred_Sl_fix), col = 'black') +
+  xlab('Standardized temperature') + ylab('Standardized phenology')
+
+```
+
+In some cases we do not want to show all the random effects but just want to show the fixed effect and the estimated variance around it. Let us see how to do it.     
+This, unfortunately, is still not possible for models with random slopes in spaMM (but is available for random-intercept models). 
+
+
+
+# Use glmmTMB package to fit mixed-effects models
+So, we learn another package that is commonly used to fit mixed-effects models in R.
+TMB stands for 'Template Model Builder'.     
+
+## A model with random intercept
+The syntax is very similar to that used in `lme4`. To fit the model with maximum likelihood we use the same option as in `lme4`, i.e. `REML = FALSE`.
+```{r mod-spIntercept GLMMTMB, echo= TRUE, out.width= '100%', fig.align='center'}
+mod_randInt_TMB <- glmmTMB(Trait_mean ~  det_Clim + (1|Species), data = dat_fac, REML = FALSE)
+summary(mod_randInt_TMB)  
+
+```
+
+# Interpreting the results obtained with glmmTMB
+The output similar to that obtained with `lme4`:     
+
+- First section on the model fit including information on AIC, BIC, log Likelihood, df.    
+- __Random effects__ shows the estimated parameters for random effects. The variance of the random intercept is estimated at `r attr(VarCorr(mod_randInt_TMB)$cond$Species, 'stddev')^2`. Here we also see the estimated residual variance, which is `r round(sigma(mod_randInt_TMB)^2, 3)`. It is specified both as "Residual" and as "Dispersion estimate for Gaussian family".      
+- __Fixed effects__ can be interpreted the same way as the analogous output from `lme4`. Unlike the output of `lme4` glmmTMB still provides the p values (`lme4` stopped doing that because for multiple reasons, spaMM also follows the same philosophy)           
+
+
+
+Compare to the output obtained with the `spaMM` package
+```{r out mod Interc spaMM, echo= TRUE, out.width= '100%', fig.align='center'}
+summary(mod_randInt)  
+
+```
+
+
+```{r mod-spIntercept GLMMTMB res, echo= TRUE}
+summary(mod_randInt_TMB)  
+
+```
+
+## A model with random slope
+```{r mod-spSlope GLMMTMB, echo= TRUE}
+mod_randSl_TMB <- glmmTMB(Trait_mean ~  det_Clim + (1 + det_Clim|Species), data = dat_fac, REML = FALSE)
+summary(mod_randSl_TMB)  
+
+```
+
+# Plot predictions with the random-slope model
+We can again use the same (new) dataset whcih we generated for producing the predictions with the random-intercept model.
+```{r pred RandSlope glmmTMB, echo = TRUE, out.width = '100%', fig.align='center'}
+ 
+newd$pred_Sl_fixTMB <- predict(mod_randSl_TMB, newdata = newd, re.form = NA, type = 'response')
+newd$pred_Sl_TMB <- as.numeric(predict(mod_randSl, newdata = newd, type = 'response'))
+
+ggplot(data = newd, aes(x = det_Clim, y = pred_Sl_TMB, group = Species, col = Species)) +
+  geom_line(lty = 3) + theme_bw() +
+  geom_line(data = newd, aes(x = det_Clim, y = pred_Sl_fixTMB), col = 'black') +
+  xlab('Standardized temperature') + ylab('Standardized phenology')
+
+```
+
+Adding SE to the predictions of the random-slope model. We use the `predict.glmmTMB()` function ot compute SE around the estimates, and use those to compute CI assuming Normal distribution around the mean.
+```{r pred SE randSlope TMB, echo = TRUE, out.width='100%', fig.align = 'center'}
+newd$pre_SE_fixTMB <- predict(mod_randSl_TMB, newdata = newd, re.form = NA, se.fit = TRUE, type = 'response')$se.fit 
+newd$pred_SE_TMB <- predict(mod_randSl_TMB, newdata = newd, re.form = NULL, se.fit = TRUE, type = 'response')$se.fit 
+newd$pred_upper_fix <- newd$pred_Sl_fixTMB + qnorm(0.975)*newd$pre_SE_fixTMB 
+newd$pred_lower_fix <- newd$pred_Sl_fixTMB - qnorm(0.975)*newd$pre_SE_fixTMB 
+head(newd)
+
+# predictions for the mean response across species
+ggplot(data = newd, aes(x = det_Clim, y = pred_Sl_fixTMB, group = Species)) +
+  theme_bw() +
+  geom_ribbon(data = newd, aes(x = det_Clim, ymin = pred_lower_fix, ymax = pred_upper_fix), alpha = 0.1) +
+  geom_line(lty  = 3)
+  
+
+```
+
+And now let us predict with the uncertainty around each level of the random factor.
+```{r pred SE rnadSlope TMB -indlevel, echo = TRUE, out.width='100%', fig.align='center'}
+newd$pred_upper <- newd$pred_Sl_TMB + qnorm(0.975)*newd$pred_SE_TMB 
+newd$pred_lower <- newd$pred_Sl_TMB - qnorm(0.975)*newd$pred_SE_TMB 
+ggplot(data = newd, aes(x = det_Clim, y = pred_Sl_TMB, group = Species, col = Species)) +
+  theme_bw() +
+  geom_ribbon(data = newd, aes(x = det_Clim, ymin = pred_lower, ymax = pred_upper, group = Species, fill = Species), alpha = 0.3) +
+  geom_line(lty  = 3)
+```
+
+
+# Questions?
+
+
+
+
+
+
+
+

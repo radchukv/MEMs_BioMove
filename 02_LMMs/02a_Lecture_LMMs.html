@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Radchuk Viktoriia" />
+  <meta name="dcterms.date" content="2022-12-23" />
+  <title>A closer look: Mixed-effects models</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="02a_Lecture_LMMs_files/reveal.js-3.3.0.1/css/reveal.css"/>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="02a_Lecture_LMMs_files/reveal.js-3.3.0.1/css/theme/simple.css" id="theme">
+
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+
+<!-- Printing and PDF exports -->
+<script id="paper-css" type="application/dynamic-css">
+
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+
+@media print {
+
+	/* SECTION 1: Set default width, margin, float, and
+	   background. This prevents elements from extending
+	   beyond the edge of the printed page, and prevents
+	   unnecessary background images from printing */
+	html {
+		background: #fff;
+		width: auto;
+		height: auto;
+		overflow: visible;
+	}
+	body {
+		background: #fff;
+		font-size: 20pt;
+		width: auto;
+		height: auto;
+		border: 0;
+		margin: 0 5%;
+		padding: 0;
+		overflow: visible;
+		float: none !important;
+	}
+
+	/* SECTION 2: Remove any elements not needed in print.
+	   This would include navigation, ads, sidebars, etc. */
+	.nestedarrow,
+	.controls,
+	.fork-reveal,
+	.share-reveal,
+	.state-background,
+	.reveal .progress,
+	.reveal .backgrounds {
+		display: none !important;
+	}
+
+	/* SECTION 3: Set body font face, size, and color.
+	   Consider using a serif font for readability. */
+	body, p, td, li, div {
+		font-size: 20pt!important;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		color: #000;
+	}
+
+	/* SECTION 4: Set heading font face, sizes, and color.
+	   Differentiate your headings from your body text.
+	   Perhaps use a large sans-serif for distinction. */
+	h1,h2,h3,h4,h5,h6 {
+		color: #000!important;
+		height: auto;
+		line-height: normal;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		text-shadow: 0 0 0 #000 !important;
+		text-align: left;
+		letter-spacing: normal;
+	}
+	/* Need to reduce the size of the fonts for printing */
+	h1 { font-size: 28pt !important;  }
+	h2 { font-size: 24pt !important; }
+	h3 { font-size: 22pt !important; }
+	h4 { font-size: 22pt !important; font-variant: small-caps; }
+	h5 { font-size: 21pt !important; }
+	h6 { font-size: 20pt !important; font-style: italic; }
+
+	/* SECTION 5: Make hyperlinks more usable.
+	   Ensure links are underlined, and consider appending
+	   the URL to the end of the link for usability. */
+	a:link,
+	a:visited {
+		color: #000 !important;
+		font-weight: bold;
+		text-decoration: underline;
+	}
+	/*
+	.reveal a:link:after,
+	.reveal a:visited:after {
+		content: " (" attr(href) ") ";
+		color: #222 !important;
+		font-size: 90%;
+	}
+	*/
+
+
+	/* SECTION 6: more reveal.js specific additions by @skypanther */
+	ul, ol, div, p {
+		visibility: visible;
+		position: static;
+		width: auto;
+		height: auto;
+		display: block;
+		overflow: visible;
+		margin: 0;
+		text-align: left !important;
+	}
+	.reveal pre,
+	.reveal table {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.reveal pre code {
+		padding: 20px;
+		border: 1px solid #ddd;
+	}
+	.reveal blockquote {
+		margin: 20px 0;
+	}
+	.reveal .slides {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 0 !important;
+		zoom: 1 !important;
+
+		overflow: visible !important;
+		display: block !important;
+
+		text-align: left !important;
+		-webkit-perspective: none;
+		   -moz-perspective: none;
+		    -ms-perspective: none;
+		        perspective: none;
+
+		-webkit-perspective-origin: 50% 50%;
+		   -moz-perspective-origin: 50% 50%;
+		    -ms-perspective-origin: 50% 50%;
+		        perspective-origin: 50% 50%;
+	}
+	.reveal .slides section {
+		visibility: visible !important;
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		display: block !important;
+		overflow: visible !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 60px 20px !important;
+		z-index: auto !important;
+
+		opacity: 1 !important;
+
+		page-break-after: always !important;
+
+		-webkit-transform-style: flat !important;
+		   -moz-transform-style: flat !important;
+		    -ms-transform-style: flat !important;
+		        transform-style: flat !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+
+		-webkit-transition: none !important;
+		   -moz-transition: none !important;
+		    -ms-transition: none !important;
+		        transition: none !important;
+	}
+	.reveal .slides section.stack {
+		padding: 0 !important;
+	}
+	.reveal section:last-of-type {
+		page-break-after: avoid !important;
+	}
+	.reveal section .fragment {
+		opacity: 1 !important;
+		visibility: visible !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+	}
+	.reveal section img {
+		display: block;
+		margin: 15px 0px;
+		background: rgba(255,255,255,1);
+		border: 1px solid #666;
+		box-shadow: none;
+	}
+
+	.reveal section small {
+		font-size: 0.8em;
+	}
+
+}  
+</script>
+
+
+<script id="pdf-css" type="application/dynamic-css">
+    
+/**
+ * This stylesheet is used to print reveal.js
+ * presentations to PDF.
+ *
+ * https://github.com/hakimel/reveal.js#pdf-export
+ */
+
+* {
+	-webkit-print-color-adjust: exact;
+}
+
+body {
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Remove any elements not needed in print. */
+.nestedarrow,
+.reveal .controls,
+.reveal .progress,
+.reveal .playback,
+.reveal.overview,
+.fork-reveal,
+.share-reveal,
+.state-background {
+	display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-shadow: 0 0 0 #000 !important;
+}
+
+.reveal pre code {
+	overflow: hidden !important;
+	font-family: Courier, 'Courier New', monospace !important;
+}
+
+ul, ol, div, p {
+	visibility: visible;
+	position: static;
+	width: auto;
+	height: auto;
+	display: block;
+	overflow: visible;
+	margin: auto;
+}
+.reveal {
+	width: auto !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+.reveal .slides {
+	position: static;
+	width: 100%;
+	height: auto;
+
+	left: auto;
+	top: auto;
+	margin: 0 !important;
+	padding: 0 !important;
+
+	overflow: visible;
+	display: block;
+
+	-webkit-perspective: none;
+	   -moz-perspective: none;
+	    -ms-perspective: none;
+	        perspective: none;
+
+	-webkit-perspective-origin: 50% 50%; /* there isn't a none/auto value but 50-50 is the default */
+	   -moz-perspective-origin: 50% 50%;
+	    -ms-perspective-origin: 50% 50%;
+	        perspective-origin: 50% 50%;
+}
+
+.reveal .slides section {
+	page-break-after: always !important;
+
+	visibility: visible !important;
+	position: relative !important;
+	display: block !important;
+	position: relative !important;
+
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	min-height: 1px;
+
+	opacity: 1 !important;
+
+	-webkit-transform-style: flat !important;
+	   -moz-transform-style: flat !important;
+	    -ms-transform-style: flat !important;
+	        transform-style: flat !important;
+
+	-webkit-transform: none !important;
+	   -moz-transform: none !important;
+	    -ms-transform: none !important;
+	        transform: none !important;
+}
+
+.reveal section.stack {
+	margin: 0 !important;
+	padding: 0 !important;
+	page-break-after: avoid !important;
+	height: auto !important;
+	min-height: auto !important;
+}
+
+.reveal img {
+	box-shadow: none;
+}
+
+.reveal .roll {
+	overflow: visible;
+	line-height: 1em;
+}
+
+/* Slide backgrounds are placed inside of their slide when exporting to PDF */
+.reveal section .slide-background {
+	display: block !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: -1;
+}
+
+/* All elements should be above the slide-background */
+.reveal section>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Display slide speaker notes when 'showNotes' is enabled */
+.reveal .speaker-notes-pdf {
+	display: block;
+	width: 100%;
+	max-height: none;
+	left: auto;
+	top: auto;
+	z-index: 100;
+}
+
+/* Display slide numbers when 'slideNumber' is enabled */
+.reveal .slide-number-pdf {
+	display: block;
+	position: absolute;
+	font-size: 14px;
+}
+
+</script>
+
+
+<script>
+var style = document.createElement( 'style' );
+style.type = 'text/css';
+var style_script_id = window.location.search.match( /print-pdf/gi ) ? 'pdf-css' : 'paper-css';
+var style_script = document.getElementById(style_script_id).text;
+style.innerHTML = style_script;
+document.getElementsByTagName('head')[0].appendChild(style);
+</script>
+
+    <script src="02a_Lecture_LMMs_files/header-attrs-2.19/header-attrs.js"></script>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">A closer look: Mixed-effects models</h1>
+    <h2 class="author">Radchuk Viktoriia</h2>
+    <h3 class="date">2022-12-23</h3>
+</section>
+
+<section class="slide level2">
+
+<style type="text/css">
+.reveal ul {
+  font-size: 30px;
+}
+.reveal ol {
+  font-size: 30px;
+  margin-bottom: -10px;
+}
+.reveal p {
+ font-size: 30px;
+  margin-bottom: -10px;
+}
+.reveal  pre {
+  font-size: 14px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: -2px;
+}
+.reveal code.r{
+  font-size: 14px;
+}
+
+pre[class] {
+  max-height: 100px;
+}
+
+.scroll-100 {
+  max-height: 100px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+</style>
+</section>
+<section id="random-intercept-models" class="title-slide slide level1">
+<h1>Random intercept models</h1>
+<p><span style="color:orange"> What is intercept? </span></p>
+<ul>
+<li class="fragment"><p><span class="math inline">\(y = \alpha +
+\beta\times x + \epsilon\)</span>, <span class="math inline">\(\epsilon
+\sim N(0, \sigma^2)\)</span><br />
+</p></li>
+<li class="fragment"><p><span style="color:green"><span
+class="math inline">\(\alpha\)</span></span> is intercept, i.e. the
+value of the response variable when the predictor = 0,</p></li>
+<li class="fragment"><p><span style="color:orange"><span
+class="math inline">\(\beta\)</span></span> is slope, i.e. by how much
+the response variable is increasing per each unit of the predictor
+<img src="02a_Lecture_LMMs_files/figure-revealjs/interceptReminder-1.png" width="40%" height="40%" style="display: block; margin: auto;" /></p></li>
+</ul>
+</section>
+
+<section id="random-intercept-models-math"
+class="title-slide slide level1">
+<h1>Random intercept models: math</h1>
+<p>Let us consider a LMM with:</p>
+<ul>
+<li class="fragment"><p>one random factor that has <span
+class="math inline">\(q\)</span> levels,</p></li>
+<li class="fragment"><p><span class="math inline">\(n\)</span>
+observations, and</p></li>
+<li class="fragment"><p><span class="math inline">\(p\)</span>
+explanatory fixed variables (in <span
+class="math inline">\(\mathbf{X}\)</span>)</p></li>
+</ul>
+<p><span class="math inline">\(\mathbf{Y} = \mathbf{X} \beta +
+\mathbf{Z}b + \epsilon\)</span></p>
+<p>These matrices stand for:</p>
+<p><font size = 3> <span class="math display">\[
+\begin{bmatrix} y_1 \\ y_2 \\ y_3 \\ \vdots \\ y_n \end{bmatrix} =
+\begin{bmatrix}
+1 &amp; x_{1,1} &amp; x_{1,2} &amp; \dots &amp; x_{1,p} \\
+1 &amp; x_{2,1} &amp; x_{2,2} &amp; \dots &amp; x_{2,p} \\
+1 &amp; x_{3,1} &amp; x_{3,2} &amp; \dots &amp; x_{3,p} \\
+\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+1 &amp; x_{n,1} &amp; x_{n,2} &amp; \dots &amp; x_{n,p}
+\end{bmatrix}
+\begin{bmatrix}
+\beta_0 \\ \beta_1 \\ \beta_2 \\ \vdots \\ \beta_p
+\end{bmatrix}+
+\begin{bmatrix}
+z_{1,1} &amp; z_{1,2} &amp; z_{1,3} &amp; \dots &amp; z_{1,q} \\
+z_{2,1} &amp; z_{2,2} &amp; z_{2,3} &amp; \dots &amp; z_{2,q} \\
+z_{3,1} &amp; z_{3,2} &amp; z_{3,3} &amp; \dots &amp; z_{3,q} \\
+\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+z_{n,1} &amp; z_{n,2} &amp; z_{n,3} &amp; \dots &amp; z_{n,q} \\
+\end{bmatrix}
+\begin{bmatrix}
+b_1 \\ b_2 \\ b_3 \\ \vdots \\ b_q
+\end{bmatrix}+
+\begin{bmatrix}
+\epsilon_1 \\ \epsilon_2 \\ \epsilon_3 \\ \vdots \\ \epsilon_n
+\end{bmatrix}
+\]</span> </font></p>
+</section>
+
+<section id="random-intercept-models-math-1"
+class="title-slide slide level1">
+<h1>Random intercept models: math</h1>
+<p>often</p>
+<p><font size = 5> <span class="math inline">\(b \sim N(0,
+\mathbf{D})\)</span>, <span class="math inline">\(\epsilon \sim N(0,
+\mathbf{\sum})\)</span> </font></p>
+<p>Or, in more detail:</p>
+<font size = 5> <span class="math display">\[
+b \sim N\left(0,
+\begin{bmatrix}
+\lambda &amp; 0 &amp; 0 &amp; \dots &amp; 0 \\
+0 &amp; \lambda &amp; 0 &amp; \dots &amp; 0 \\
+0 &amp; 0 &amp; \lambda &amp; \dots &amp; 0 \\
+\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+0 &amp; 0 &amp; 0 &amp; \dots &amp; \lambda \\
+\end{bmatrix}\right)
+\text{&amp;  }
+\epsilon \sim N\left(0,
+\begin{bmatrix}
+\phi &amp; 0 &amp; 0 &amp; \dots &amp; 0 \\
+0 &amp; \phi &amp; 0 &amp; \dots &amp; 0 \\
+0 &amp; 0 &amp; \phi &amp; \dots &amp; 0 \\
+\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+0 &amp; 0 &amp; 0 &amp; \dots &amp; \phi
+\end{bmatrix}\right)
+\]</span> </font>
+</center>
+<p>where <span class="math inline">\(\lambda\)</span> and <span
+class="math inline">\(\phi\)</span> are, respectively, variances of a
+random effect and of residuals.</p>
+<p>In the random intercept model the relations between predictor(s) and
+the response are the same across all levels of the random effect
+variable</p>
+</section>
+
+<section id="example" class="title-slide slide level1">
+<h1>Example</h1>
+<p>Let us recall the example from the exercise:<br />
+Q: assess the relation between phenology and temperature across
+species.</p>
+<ul style="text-align: left;">
+<p>Let us consider an example with:</p>
+<ul>
+<li class="fragment">6 species, i.e. <span class="math inline">\(q =
+6\)</span> (the number of levels of the random factors, or number of
+groups / IDs);<br />
+</li>
+<li class="fragment">120 datapoints, i.e. <span class="math inline">\(n
+= 120\)</span> (we simplify and assume there is 20 data points per each
+species, but generally it is not required to have same number of
+observations per level)<br />
+</li>
+<li class="fragment">1 fixed explanatory continuous variable, i.e. <span
+class="math inline">\(p = 1\)</span> (temperature)</li>
+</ul>
+</ul>
+</section>
+
+<section id="our-simulated-data" class="title-slide slide level1">
+<h1>Our simulated data</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">5</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>Weight_sim <span class="ot">&lt;-</span> <span class="fu">SimulateMix</span>(<span class="at">intercept =</span> <span class="fl">0.1</span>, <span class="at">slope =</span> <span class="sc">-</span><span class="fl">0.4</span>, <span class="at">n =</span> <span class="dv">120</span>, </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">group.nb =</span> <span class="dv">6</span>, <span class="at">var.group =</span> <span class="fl">0.1</span>, </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">var.error =</span> <span class="fl">0.05</span>, <span class="at">times.perGroup =</span> <span class="dv">20</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>Weight_sim[<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">21</span><span class="sc">:</span><span class="dv">25</span>), ]</span></code></pre></div>
+<pre><code>##    intercept slope          x   group         b       error          y
+## 1        0.1  -0.4 -1.6817110 group_1 0.3702573 -0.08945021  1.0534915
+## 7        0.1  -0.4 -0.9443328 group_1 0.3702573 -0.27748499  0.5705054
+## 13       0.1  -0.4 -2.1607852 group_1 0.3702573  0.14506324  1.4796346
+## 19       0.1  -0.4  0.4816345 group_1 0.3702573 -0.06821095  0.2093926
+## 25       0.1  -0.4  1.6380179 group_1 0.3702573  0.21155183  0.0266020
+## 2        0.1  -0.4  2.7687187 group_2 0.2798125  0.27796467 -0.4497103
+## 8        0.1  -0.4 -1.2707426 group_2 0.2798125 -0.02326386  0.8648457
+## 14       0.1  -0.4 -0.3150687 group_2 0.2798125  0.06689472  0.5727347
+## 20       0.1  -0.4 -0.5187108 group_2 0.2798125 -0.09355783  0.4937390
+## 26       0.1  -0.4 -0.5869637 group_2 0.2798125  0.16810108  0.7826991</code></pre>
+<p style="font-size: 60%;">
+We simulated the data assuming 6 species (groups more generally), with
+20 data points per species, a negative relation between temperature and
+weight, and some variation around the random intercept.
+</p>
+</section>
+
+<section id="plot-the-data" class="title-slide slide level1">
+<h1>Plot the data</h1>
+<p><em>predictor, i.e. temperature</em></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(Weight_sim<span class="sc">$</span>x, <span class="at">main =</span> <span class="cn">NULL</span>, <span class="at">xlab =</span> <span class="st">&#39;Standardized temperature&#39;</span>)</span></code></pre></div>
+<p><img src="02a_Lecture_LMMs_files/figure-revealjs/plot%20simu-data%20predictor-1.png" width="60%" height="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="plot-the-data-1" class="title-slide slide level1">
+<h1>Plot the data</h1>
+<p><em>response, i.e. phenology</em></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(Weight_sim<span class="sc">$</span>y, <span class="at">main =</span> <span class="cn">NULL</span>, <span class="at">xlab =</span> <span class="st">&#39;Standardized phenological trait&#39;</span>)</span></code></pre></div>
+<p><img src="02a_Lecture_LMMs_files/figure-revealjs/plot%20simu-data%20response-1.png" width="60%" height="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="plot-the-data-2" class="title-slide slide level1">
+<h1>Plot the data</h1>
+<p><em>relation between the predictor and response per level of random
+effect</em></p>
+<p><img src="02a_Lecture_LMMs_files/figure-revealjs/plot%20simu-data%20relation-1.png" width="768" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="fit-the-random-intercept-model"
+class="title-slide slide level1">
+<h1>Fit the random-intercept model</h1>
+<p>We will have a look at the syntax of several different R libraries
+that allow fitting mixed-effects models.<br />
+Let us start with using the <code>lme4</code> package and a function
+<code>lmer()</code>.<br />
+We specify the random effect with the syntax <code>(1|group)</code>.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>mod_randi <span class="ot">&lt;-</span> <span class="fu">lmer</span>(y <span class="sc">~</span> x <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>group), <span class="at">data =</span> Weight_sim, <span class="at">REML =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+</section>
+
+<section id="interpreting-model-output"
+class="title-slide slide level1">
+<h1>Interpreting model output</h1>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: y ~ x + (1 | group)
+##    Data: Weight_sim
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##     15.4     26.6     -3.7      7.4      116 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.6938 -0.5642 -0.0861  0.6851  2.4374 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  group    (Intercept) 0.12976  0.3602  
+##  Residual             0.05113  0.2261  
+## Number of obs: 120, groups:  group, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  0.12775    0.14851    0.86
+## x           -0.39026    0.01088  -35.87
+## 
+## Correlation of Fixed Effects:
+##   (Intr)
+## x -0.005</code></pre>
+<ul>
+<li class="fragment">We see information on AIC, BIC, Log Likelihood, df.
+<span style="color:orange">Why do we have 116 degrees of
+freedom?</span><br />
+</li>
+<li class="fragment"><strong>Random effects</strong> shows the estimated
+parameters for random effects. The variance of the random intercept
+<span class="math inline">\(\lambda\)</span> is estimated at <span
+class="math inline">\(\lambda = 0.3602^2 = 0.1297\)</span></li>
+</ul>
+</section>
+
+<section id="interpreting-model-output-1"
+class="title-slide slide level1">
+<h1>Interpreting model output</h1>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: y ~ x + (1 | group)
+##    Data: Weight_sim
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##     15.4     26.6     -3.7      7.4      116 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.6938 -0.5642 -0.0861  0.6851  2.4374 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  group    (Intercept) 0.12976  0.3602  
+##  Residual             0.05113  0.2261  
+## Number of obs: 120, groups:  group, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  0.12775    0.14851    0.86
+## x           -0.39026    0.01088  -35.87
+## 
+## Correlation of Fixed Effects:
+##   (Intr)
+## x -0.005</code></pre>
+<ul>
+<li class="fragment"><strong>Residual variance</strong> is estimated at
+<span class="math inline">\(\phi = 0.2261^2 = 0.0511\)</span><br />
+</li>
+<li class="fragment"><strong>Fixed effects</strong> shows the estimates
+of the fixed effects parameters (as well as their SError), just as in
+the regular linear model.</li>
+</ul>
+</section>
+
+<section id="compare-estimated-and-simulated-parameters"
+class="title-slide slide level1">
+<h1>Compare estimated and simulated parameters</h1>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(coef_lmer       <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">fixef</span>(mod_randi)[<span class="dv">1</span>]), <span class="fu">as.numeric</span>(<span class="fu">fixef</span>(mod_randi)[<span class="dv">2</span>]), </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  var_group_lmer  <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">attr</span>(<span class="fu">VarCorr</span>(mod_randi)<span class="sc">$</span>group, <span class="st">&quot;stddev&quot;</span>)<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  var_error_lmer  <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">attr</span>(<span class="fu">VarCorr</span>(mod_randi), <span class="st">&quot;sc&quot;</span>)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div>
+<pre><code>## [1]  0.1277485 -0.3902584  0.1297634  0.0511348</code></pre>
+<p>We used</p>
+<ul>
+<li class="fragment">intercept = 0.1,<br />
+</li>
+<li class="fragment">slope = -0.4,<br />
+</li>
+<li class="fragment">var.group = 0.1,<br />
+</li>
+<li class="fragment">var.error = 0.05.<br />
+
+<p style = "font-size: 80%;"></li>
+<li class="fragment"><span style="color:orange">What does
+<code>fixef()</code> does?</span><br />
+</li>
+<li class="fragment"><span style="color:orange"> And what does
+<code>ranef()</code> does?</span><br />
+
+</p></li>
+</ul>
+</section>
+
+<section id="fixed-effects-estimates-fixef"
+class="title-slide slide level1">
+<h1>Fixed-effects estimates: <code>fixef()</code></h1>
+<p style="font-size: 80%;">
+<code>fixef()</code> extracts the fixed-effects estimates. So, in our
+case these are the estimates of the intercept and the slope of phenology
+on temperature. If we had categorical predictor, the estimates would be
+the difference of each level of that categorical predictor with the one
+that is taken as reference, i.e. intercept (this is the way R usually
+fits models)
+</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fixef</span>(mod_randi)</span></code></pre></div>
+<pre><code>## (Intercept)           x 
+##   0.1277485  -0.3902584</code></pre>
+</section>
+
+<section id="blup-ranef" class="title-slide slide level1">
+<h1>BLUP: <code>ranef()</code></h1>
+<p style="font-size: 80%;">
+<code>ranef()</code> returns conditional modes of the random effects.
+These are also known (in case of linear models) as <strong>Best Linear
+Unbiased Predictors (BLUPs)</strong>. They show the difference between
+the (population-level) average predicted response for a given
+fixed-effect value and the response predicted for a particular level of
+the random factor (i.e. individual/group/species). You can think of
+these as the group-level effects, i.e. how much does any group/species
+differ from the mean population value?
+</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ranef</span>(mod_randi)</span></code></pre></div>
+<pre><code>## $group
+##         (Intercept)
+## group_1  0.36822280
+## group_2  0.30110155
+## group_3 -0.44228195
+## group_4 -0.52420228
+## group_5  0.25519340
+## group_6  0.04196648
+## 
+## with conditional variances for &quot;group&quot;</code></pre>
+</section>
+
+<section id="non-independence-of-the-data"
+class="title-slide slide level1">
+<h1>Non-independence of the data</h1>
+What is the correlation between the observations taken for the same
+species and for those from different species?
+<p style="text-align:center;">
+<img src="img/Phen_Birds_MixedEff.jpg" height = "500"/>
+</p>
+</section>
+
+<section id="non-independence-of-the-data-1"
+class="title-slide slide level1">
+<h1>Non-independence of the data</h1>
+<p><span class="math inline">\(\mathbf{Y}_{i} = \mathbf{X}_{i} \beta +
+\mathbf{Z}_{i}b_i + \epsilon_i\)</span><br />
+To derive the expression of the covariance matrix, this can be written
+as<br />
+<span class="math inline">\(\mathbf{Y} \sim N(\mathbf{X} \beta,
+\mathbf{V}_{i})\)</span><br />
+where <span class="math inline">\(\mathbf{V_{\mathit{i}}} =
+\mathbf{Z}_{i} \times \mathbf{D}_{i} \times \mathbf{Z&#39;}_{i} +
+\mathbf{\sum}_{i}\)</span><br />
+recall that<br />
+<span class="math inline">\(b \sim N(0, \mathbf{D})\)</span>,<br />
+<span class="math inline">\(\epsilon \sim N(0,
+\mathbf{\sum})\)</span></p>
+<p>so, <span class="math inline">\(\mathbf{D}_{i}\)</span> is the
+covariance matrix of the random effects. That means that including
+random effects has impact on the covariance matrix <span
+class="math inline">\(\mathbf{V}_{i}\)</span>.</p>
+</section>
+
+<section id="intraclass-correlation-coefficient"
+class="title-slide slide level1">
+<h1>Intraclass Correlation Coefficient</h1>
+<p>Looking at the covariance matrix for a single species</p>
+<p><span class="math display">\[
+\mathbf{V}_{i} =
+\begin{bmatrix}
+\lambda + \phi &amp; \lambda &amp; \lambda &amp; \dots &amp; \lambda \\
+\lambda &amp; \lambda + \phi &amp; \lambda &amp; \dots &amp; \lambda \\
+\lambda &amp; \lambda &amp; \lambda + \phi &amp; \dots &amp; \lambda \\
+\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+\lambda &amp; \lambda &amp; \lambda &amp; \dots &amp; \lambda + \phi \\
+\end{bmatrix}
+\]</span></p>
+<p>This shows that the covariance between any two data points for the
+same species is <span class="math inline">\(\lambda\)</span> and the
+variance is <span class="math inline">\(\lambda + \phi\)</span><br />
+By definition, the correlation between two observations coming from the
+same species is: <span class="math inline">\(\lambda / (\lambda +
+\phi)\)</span><br />
+This is called <strong>intra-class correlation (ICC)</strong>.</p>
+</section>
+
+<section id="calculate-icc-for-our-example"
+class="title-slide slide level1">
+<h1>Calculate ICC for our example</h1>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod_randi)</span></code></pre></div>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: y ~ x + (1 | group)
+##    Data: Weight_sim
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##     15.4     26.6     -3.7      7.4      116 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.6938 -0.5642 -0.0861  0.6851  2.4374 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  group    (Intercept) 0.12976  0.3602  
+##  Residual             0.05113  0.2261  
+## Number of obs: 120, groups:  group, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  0.12775    0.14851    0.86
+## x           -0.39026    0.01088  -35.87
+## 
+## Correlation of Fixed Effects:
+##   (Intr)
+## x -0.005</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>var_group_lmer  <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">attr</span>(<span class="fu">VarCorr</span>(mod_randi)<span class="sc">$</span>group, <span class="st">&quot;stddev&quot;</span>)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>var_error_lmer  <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">attr</span>(<span class="fu">VarCorr</span>(mod_randi), <span class="st">&quot;sc&quot;</span>)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>ICC <span class="ot">&lt;-</span> var_group_lmer <span class="sc">/</span> (var_group_lmer <span class="sc">+</span> var_error_lmer)</span></code></pre></div>
+<p>So, the Intra-class correlation is 0.7173283</p>
+</section>
+
+<section id="implications-of-icc" class="title-slide slide level1">
+<h1>Implications of ICC</h1>
+<p style="text-align:left;">
+<ul>
+<li class="fragment">Intra-class correlation for our data is 0.72<br />
+</li>
+<li class="fragment">It means that our sample size is not 120 and
+actually, should be corrected to <em>effective sample size</em> (<span
+class="math inline">\(N_{effective}\)</span>)<br />
+To do that, we need the ICC = 0.72, and <span
+class="math inline">\(\mathit{l}\)</span> (number of samples per
+individual) = 20.<br />
+</li>
+<li class="fragment">We calculate:
+<ul>
+<li class="fragment">design effect as <span
+class="math inline">\(desEffect = 1 + (\mathit{l} -1) \times ICC = 1 +
+19 \times 0.72 = 14.68\)</span><br />
+</li>
+<li class="fragment">effective sample size as <span
+class="math inline">\(N_{effective} = (q \times l) / desEffect = 6
+\times 20 / 14.68 = 8.2\)</span><br />
+</li>
+</ul></li>
+<li class="fragment">So, high ICC implies that the corrected sample size
+is much smaller, meaning less precise standard errors.<br />
+
+<p style="font-size:80%;color:blue">
+Attention: this formula for the design effect is only applicable when
+the number of data points per level of random effect is equal, as here!
+</p></li>
+</ul>
+</p>
+</section>
+
+<section id="plot-predictions" class="title-slide slide level1">
+<h1>Plot predictions</h1>
+<p>We use function <code>predict()</code> to get the predictions to a
+new data. So, first create the data.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>new.dat <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(<span class="st">&#39;group&#39;</span> <span class="ot">=</span> <span class="fu">unique</span>(Weight_sim<span class="sc">$</span>group), </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                       <span class="at">x =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="fu">min</span>(Weight_sim<span class="sc">$</span>x), <span class="at">to =</span> </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                                    <span class="fu">max</span>(Weight_sim<span class="sc">$</span>x), <span class="at">length.out =</span> <span class="dv">20</span>))</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>new.dat[<span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>, ]</span></code></pre></div>
+<pre><code>##     group         x
+## 1 group_1 -4.367934
+## 2 group_2 -4.367934
+## 3 group_3 -4.367934
+## 4 group_4 -4.367934
+## 5 group_5 -4.367934
+## 6 group_6 -4.367934
+## 7 group_1 -3.864343
+## 8 group_2 -3.864343
+## 9 group_3 -3.864343</code></pre>
+</section>
+
+<section id="plot-predictions-1" class="title-slide slide level1">
+<h1>Plot predictions</h1>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>new.dat<span class="sc">$</span>pred_fix <span class="ot">&lt;-</span> <span class="fu">predict</span>(mod_randi, <span class="at">newdata =</span> new.dat, <span class="at">re.form =</span> <span class="sc">~</span> <span class="dv">0</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>new.dat<span class="sc">$</span>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(mod_randi, <span class="at">newdata =</span> new.dat, <span class="at">re.form =</span> <span class="cn">NULL</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> new.dat, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> pred, <span class="at">group =</span> group, <span class="at">col =</span> group)) <span class="sc">+</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">lty =</span> <span class="dv">3</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> new.dat, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> pred_fix), <span class="at">col =</span> <span class="st">&#39;black&#39;</span>) <span class="sc">+</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&#39;Standardized temperature&#39;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&#39;Standardized morphology&#39;</span>)</span></code></pre></div>
+<img src="02a_Lecture_LMMs_files/figure-revealjs/RInt%20plot%20predictions-1.png" width="45%" height="45%" style="display: block; margin: auto;" />
+<p style="font-size: 70%;">
+Option “re.form =” says whether to include random effect (if “re.form =
+NULL”) or to only predict using the fixed effect(s).
+</p>
+</section>
+
+<section id="best-linear-unbiased-predictors"
+class="title-slide slide level1">
+<h1>Best Linear Unbiased Predictors</h1>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>new.dat<span class="sc">$</span>pred_ranE <span class="ot">&lt;-</span> <span class="fu">predict</span>(mod_randi, <span class="at">newdata =</span> new.dat, <span class="at">re.form =</span> <span class="cn">NULL</span>, <span class="at">random.only =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>randEF <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">ranef</span>(mod_randi)) <span class="sc">%&gt;%</span> </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">group =</span> grp)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> new.dat, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> pred_ranE, <span class="at">group =</span> group, <span class="at">col =</span> group)) <span class="sc">+</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">lty =</span> <span class="dv">3</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> new.dat, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> pred_fix), <span class="at">col =</span> <span class="st">&#39;black&#39;</span>) <span class="sc">+</span> </span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> randEF, <span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> condval, <span class="at">col =</span> group), <span class="at">pch =</span> <span class="dv">20</span>, <span class="at">size =</span> <span class="dv">7</span>) <span class="sc">+</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&#39;Standardized temperature&#39;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&#39;Standardized phenology&#39;</span>)</span></code></pre></div>
+<p><img src="02a_Lecture_LMMs_files/figure-revealjs/RInt%20plot%20predictions%20with%20RANEF-1.png" width="45%" height="45%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="plot-variance-around-predictions"
+class="title-slide slide level1">
+<h1>Plot variance around predictions</h1>
+<p>What type of variance?</p>
+<ul>
+<li class="fragment">Variance (uncertainty) around fixed effect
+estimate;<br />
+</li>
+<li class="fragment">Variance due to random effect, i.e. variation among
+the species;<br />
+</li>
+<li class="fragment">Residual variance.</li>
+</ul>
+</section>
+
+<section id="plot-variance-around-predictions-1"
+class="title-slide slide level1">
+<h1>Plot variance around predictions</h1>
+<p>We use the <code>predictInterval()</code> function from the
+<code>merTools</code> package to predict the CI around each predicted
+value.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>CI_full <span class="ot">&lt;-</span> <span class="fu">predictInterval</span>(mod_randi, <span class="at">newdata=</span>new.dat, <span class="at">level =</span> <span class="fl">0.95</span>) <span class="co"># by default uncertainty due to fixed effects, random eff and the residual variance</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>CI_fix <span class="ot">&lt;-</span> <span class="fu">predictInterval</span>(mod_randi, <span class="at">newdata =</span> new.dat, <span class="at">level =</span> <span class="fl">0.95</span>, <span class="at">which =</span> <span class="st">&#39;fixed&#39;</span>, <span class="at">include.resid.var =</span> <span class="cn">FALSE</span>) <span class="co"># uncertainty in fixed effects</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>CI_fix <span class="ot">&lt;-</span> CI_fix <span class="sc">%&gt;%</span> </span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">upr_Fix =</span> upr, <span class="at">lwr_Fix =</span> lwr) <span class="sc">%&gt;%</span> </span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(., <span class="sc">!</span>fit)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>new.dat <span class="ot">&lt;-</span> <span class="fu">cbind</span>(new.dat, CI_full, CI_fix)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(new.dat)</span></code></pre></div>
+<pre><code>##     group         x pred_fix     pred   pred_ranE      fit      upr       lwr
+## 1 group_1 -4.367934 1.832371 2.200594  0.36822280 2.222572 2.755213 1.6963221
+## 2 group_2 -4.367934 1.832371 2.133473  0.30110155 2.121568 2.709249 1.5627826
+## 3 group_3 -4.367934 1.832371 1.390089 -0.44228195 1.403792 1.908848 0.8611924
+## 4 group_4 -4.367934 1.832371 1.308169 -0.52420228 1.327565 1.867558 0.7227318
+## 5 group_5 -4.367934 1.832371 2.087565  0.25519340 2.079891 2.675442 1.5585650
+## 6 group_6 -4.367934 1.832371 1.874338  0.04196648 1.880409 2.430649 1.3316747
+##    upr_Fix  lwr_Fix
+## 1 2.132536 1.521855
+## 2 2.132536 1.521855
+## 3 2.132536 1.521855
+## 4 2.132536 1.521855
+## 5 2.132536 1.521855
+## 6 2.132536 1.521855</code></pre>
+</section>
+
+<section id="plot-variance-per-level-of-random-effect"
+class="title-slide slide level1">
+<h1>Plot variance: per level of random effect</h1>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> new.dat, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> pred_fix, <span class="at">group =</span> group)) <span class="sc">+</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="at">data =</span> new.dat, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">ymin =</span> lwr, <span class="at">ymax =</span> upr, <span class="at">fill =</span> group), <span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="at">data =</span> new.dat, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">ymin =</span> lwr_Fix, <span class="at">ymax =</span> upr_Fix), <span class="at">fill =</span> <span class="st">&#39;blue&#39;</span>,  <span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>   <span class="fu">geom_line</span>(<span class="at">lty =</span> <span class="dv">3</span>) <span class="sc">+</span> </span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&#39;Standardized temperature&#39;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&#39;Standardized phenology&#39;</span>)</span></code></pre></div>
+<p><img src="02a_Lecture_LMMs_files/figure-revealjs/plot%20RInt-var-1.png" width="60%" height="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="plot-variance" class="title-slide slide level1">
+<h1>Plot variance</h1>
+<p><img src="02a_Lecture_LMMs_files/figure-revealjs/RInt-randomGrey-1.png" width="80%" height="80%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="predicted-vs-fitted" class="title-slide slide level1">
+<h1><code>predicted()</code> vs <code>fitted()</code></h1>
+<p>Fitted values obtained with <code>fitted()</code> are model estimates
+for existing observations. Predicted values obtained with
+<code>predicted()</code> are model estimates for new observations (you
+saw we created a new dataset, with new x values).</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>Weight_sim<span class="sc">$</span>fitted <span class="ot">&lt;-</span> <span class="fu">fitted</span>(mod_randi)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(Weight_sim)</span></code></pre></div>
+<pre><code>##    intercept slope          x   group         b       error         y
+## 1        0.1  -0.4 -1.6817110 group_1 0.3702573 -0.08945021 1.0534915
+## 7        0.1  -0.4 -0.9443328 group_1 0.3702573 -0.27748499 0.5705054
+## 13       0.1  -0.4 -2.1607852 group_1 0.3702573  0.14506324 1.4796346
+## 19       0.1  -0.4  0.4816345 group_1 0.3702573 -0.06821095 0.2093926
+## 25       0.1  -0.4  1.6380179 group_1 0.3702573  0.21155183 0.0266020
+## 31       0.1  -0.4  0.6318301 group_1 0.3702573 -0.07560037 0.1419249
+##        fitted
+## 1   1.1522732
+## 7   0.8645052
+## 13  1.3392360
+## 19  0.3080094
+## 25 -0.1432790
+## 31  0.2493943</code></pre>
+</section>
+
+<section id="fitted-values" class="title-slide slide level1">
+<h1>Fitted values</h1>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Weight_sim, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">group  =</span> group, <span class="at">col =</span> group)) <span class="sc">+</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> Weight_sim, <span class="fu">aes</span>(<span class="at">x =</span>x, <span class="at">y =</span> fitted, <span class="at">group =</span> group), <span class="at">alpha =</span> <span class="fl">0.4</span>)</span></code></pre></div>
+<p><img src="02a_Lecture_LMMs_files/figure-revealjs/fitted%20dem-plot-1.png" width="768" height="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="difference-between-fitted-and-observed-residuals"
+class="title-slide slide level1">
+<h1>Difference between fitted and observed: residuals</h1>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>sub_group1 <span class="ot">&lt;-</span> <span class="fu">subset</span>(Weight_sim, group <span class="sc">==</span> <span class="st">&#39;group_1&#39;</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sub_group1, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">group  =</span> group, <span class="at">col =</span> group)) <span class="sc">+</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> sub_group1, <span class="fu">aes</span>(<span class="at">x =</span>x, <span class="at">y =</span> fitted, <span class="at">group =</span> group), <span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> sub_group1, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">xend =</span> x, <span class="at">y =</span> y, <span class="at">yend =</span> fitted),</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">linewidth =</span> <span class="fl">0.3</span>, <span class="at">col =</span> <span class="st">&#39;black&#39;</span>)</span></code></pre></div>
+<p><img src="02a_Lecture_LMMs_files/figure-revealjs/fitted%20demo%20detail-1.png" width="50%" height="50%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="random-slope-model" class="title-slide slide level1">
+<h1>Random slope model</h1>
+<ul>
+<li class="fragment"><p>Random intercept model allows for variation in
+intercepts between the levels of the random effect (in our case
+species).<br />
+</p></li>
+<li class="fragment"><p>But it asssumes that the relation between the
+fixed predictor and the response variable is the same across all these
+levels.</p></li>
+<li class="fragment"><p><strong>What if we had reasons to expect
+different relations between temperature and phenology, depending on the
+species?</strong></p></li>
+<li class="fragment"><p>In other words, what if not only intercepts but
+also slopes differ among species?</p></li>
+</ul>
+</section>
+
+<section
+id="random-slope-model-aka-interaction-in-lm-with-fixed-effects"
+class="title-slide slide level1">
+<h1>Random slope model: aka interaction in lm with fixed effects</h1>
+<ul>
+<li class="fragment">Recall the exercise and the meaning of the
+interaction between the species and temperature.<br />
+</li>
+<li class="fragment">Fitting a model with random slope allows to “grasp”
+such an interaction but saves degrees of freedom.<br />
+</li>
+<li class="fragment"><span style="color:orange"> Why are we saving df if
+using random slope model vs the model with all fixed
+effects?</span></li>
+</ul>
+</section>
+
+<section id="model-with-random-slope-and-intercept"
+class="title-slide slide level1">
+<h1>Model with random slope and intercept</h1>
+<p><span style="font-size:80%;"> Let us fit the model with random
+intercept and slope to the simulated data.<br />
+We use the following syntax to specify such random structure:
+<code>(1 + x|group)</code>.<br />
+Important: this syntax assumes correlation between random slope and
+random intercept (this correlation will also be estimated).<br />
+</span></p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>mod_randsl <span class="ot">&lt;-</span> <span class="fu">lmer</span>(y <span class="sc">~</span> x <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> x<span class="sc">|</span>group), <span class="at">data =</span> Weight_sim, <span class="at">REML =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## boundary (singular) fit: see help(&#39;isSingular&#39;)</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod_randsl)</span></code></pre></div>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: y ~ x + (1 + x | group)
+##    Data: Weight_sim
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##     19.4     36.1     -3.7      7.4      114 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.6926 -0.5667 -0.0791  0.6739  2.4186 
+## 
+## Random effects:
+##  Groups   Name        Variance  Std.Dev. Corr 
+##  group    (Intercept) 1.302e-01 0.360846      
+##           x           8.976e-06 0.002996 -1.00
+##  Residual             5.109e-02 0.226040      
+## Number of obs: 120, groups:  group, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  0.12724    0.14875   0.855
+## x           -0.39039    0.01094 -35.689
+## 
+## Correlation of Fixed Effects:
+##   (Intr)
+## x -0.116
+## optimizer (nloptwrap) convergence code: 0 (OK)
+## boundary (singular) fit: see help(&#39;isSingular&#39;)</code></pre>
+</section>
+
+<section id="model-warnings-singular-fit"
+class="title-slide slide level1">
+<h1>Model warnings: singular fit</h1>
+Facing the reality.<br />
+Things do not usually work just as smooth as in the lecture
+material.<br />
+
+<p style="text-align:center;">
+<img src="img/CodeDoesntWork_Meme.jpg" height = "400"/>
+</p>
+<p style="font-size: 40%;">
+<a href="http://www.quickmeme.com/meme/3uaxof"
+class="uri">http://www.quickmeme.com/meme/3uaxof</a>
+</p>
+</section>
+
+<section id="model-warnings-singular-fit-1"
+class="title-slide slide level1">
+<h1>Model warnings: singular fit</h1>
+<p style="font-size: 80%;">
+This warning means that (some of) the estimated random effects are very
+very small. Let us see the output.
+</p>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: y ~ x + (1 + x | group)
+##    Data: Weight_sim
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##     19.4     36.1     -3.7      7.4      114 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.6926 -0.5667 -0.0791  0.6739  2.4186 
+## 
+## Random effects:
+##  Groups   Name        Variance  Std.Dev. Corr 
+##  group    (Intercept) 1.302e-01 0.360846      
+##           x           8.976e-06 0.002996 -1.00
+##  Residual             5.109e-02 0.226040      
+## Number of obs: 120, groups:  group, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  0.12724    0.14875   0.855
+## x           -0.39039    0.01094 -35.689
+## 
+## Correlation of Fixed Effects:
+##   (Intr)
+## x -0.116
+## optimizer (nloptwrap) convergence code: 0 (OK)
+## boundary (singular) fit: see help(&#39;isSingular&#39;)</code></pre>
+<p style="font-size: 80%;">
+Now, in addition to the estimates for random intercept we also have the
+estimates for slope (our <span class="math inline">\(x\)</span>). NOTE:
+the variance of the random slope compared to that of the random
+intercept.<br />
+Another indication of potential issues is the correlation between random
+slope and intercept that is estimated at -1.
+</p>
+</section>
+
+<section id="singular-fit" class="title-slide slide level1">
+<h1>Singular fit</h1>
+<p>Happens if:</p>
+<ul>
+<li class="fragment">the number of the levels of random effect (<span
+class="math inline">\(q\)</span>) is low (&lt; 5);<br />
+</li>
+<li class="fragment">the model is overfitted, i.e. we try to fit the
+random structure that cannot be supported by the data;<br />
+</li>
+<li class="fragment">with lme4, singularity is usually detectable in the
+output of <code>summary.merMod()</code> or <code>VarCorr.merMod()</code>
+when a variance is estimated as 0 (or very small, i.e. orders of
+magnitude smaller than other variance components) or when a correlation
+is estimated as exactly ±1.<br />
+</li>
+<li class="fragment">For more information see here: <a
+href="https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#singular-models-random-effect-variances-estimated-as-zero-or-correlations-estimated-as---1">InfoSingular</a></li>
+</ul>
+</section>
+
+<section id="singular-fit-1" class="title-slide slide level1">
+<h1>Singular fit</h1>
+<ul>
+<li class="fragment">In our case we used the data simulated assuming
+random intercepts only (and exactly the same slope for all levels of the
+group!).<br />
+</li>
+<li class="fragment">So, we indeed overfit the model when trying to fit
+both random intercept AND slope model. That is why the estimated
+variance for the random slope is so small.<br />
+</li>
+<li class="fragment">Let us check how exactly the data were simulated in
+.Rmd.</li>
+</ul>
+</section>
+
+<section id="simulate-the-data-assuming-random-intercept-and-slope"
+class="title-slide slide level1">
+<h1>Simulate the data assuming random intercept and slope</h1>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>SimulateMixSlope <span class="ot">&lt;-</span> <span class="cf">function</span>(intercept, slope, slope.var, n, group.nb, var.group, var.error, times.perGroup){</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">intercept =</span> intercept, <span class="at">slope =</span> slope, <span class="at">x =</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">2</span>))</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  data<span class="sc">$</span>group <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">rep</span>(<span class="fu">paste</span>(<span class="st">&quot;group&quot;</span>, <span class="dv">1</span><span class="sc">:</span>group.nb, <span class="at">sep =</span> <span class="st">&quot;_&quot;</span>), times.perGroup))</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  data<span class="sc">$</span>b1 <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">rnorm</span>(group.nb, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="fu">sqrt</span>(var.group)), times.perGroup)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  data<span class="sc">$</span>b2 <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">rnorm</span>(group.nb, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="fu">sqrt</span>(slope.var)), times.perGroup)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  data<span class="sc">$</span>error <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="fu">sqrt</span>(var.error))</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  data<span class="sc">$</span>y <span class="ot">&lt;-</span> data<span class="sc">$</span>intercept <span class="sc">+</span> data<span class="sc">$</span>slope<span class="sc">*</span>data<span class="sc">$</span>x <span class="sc">+</span> data<span class="sc">$</span>b1 <span class="sc">+</span> data<span class="sc">$</span>b2<span class="sc">*</span>data<span class="sc">$</span>x <span class="sc">+</span> data<span class="sc">$</span>error</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data[<span class="fu">order</span>(data<span class="sc">$</span>group),]</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(data)</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>Weight_simSl <span class="ot">&lt;-</span> <span class="fu">SimulateMixSlope</span>(<span class="at">intercept =</span> <span class="fl">0.1</span>, <span class="at">slope =</span> <span class="sc">-</span><span class="fl">0.4</span>, <span class="at">n =</span> <span class="dv">120</span>, <span class="at">slope.var =</span> <span class="fl">0.1</span>, </span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>                          <span class="at">group.nb =</span> <span class="dv">6</span>, <span class="at">var.group =</span> <span class="fl">0.1</span>, </span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>                          <span class="at">var.error =</span> <span class="fl">0.05</span>, <span class="at">times.perGroup =</span> <span class="dv">20</span>)</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>Weight_simSl[<span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>, ]</span></code></pre></div>
+<pre><code>##     intercept slope          x   group           b1         b2        error
+## 1         0.1  -0.4 -1.0209911 group_1 -0.008504021 -0.1115824  0.147925886
+## 7         0.1  -0.4 -2.8696160 group_1 -0.008504021 -0.1115824  0.087247421
+## 13        0.1  -0.4  1.6900975 group_1 -0.008504021 -0.1115824 -0.204231680
+## 19        0.1  -0.4 -1.6966338 group_1 -0.008504021 -0.1115824 -0.155333323
+## 25        0.1  -0.4 -2.1312216 group_1 -0.008504021 -0.1115824  0.203929377
+## 31        0.1  -0.4  2.5482976 group_1 -0.008504021 -0.1115824  0.303408570
+## 37        0.1  -0.4  3.7419407 group_1 -0.008504021 -0.1115824  0.056201085
+## 43        0.1  -0.4  0.9439301 group_1 -0.008504021 -0.1115824 -0.266049260
+## 49        0.1  -0.4 -3.8848806 group_1 -0.008504021 -0.1115824  0.472811185
+## 55        0.1  -0.4  1.4927321 group_1 -0.008504021 -0.1115824 -0.133740907
+## 61        0.1  -0.4  1.7795683 group_1 -0.008504021 -0.1115824  0.336992852
+## 67        0.1  -0.4 -0.4980590 group_1 -0.008504021 -0.1115824 -0.164583223
+## 73        0.1  -0.4  5.1607505 group_1 -0.008504021 -0.1115824  0.059014495
+## 79        0.1  -0.4  0.9957463 group_1 -0.008504021 -0.1115824  0.007216469
+## 85        0.1  -0.4 -0.1696084 group_1 -0.008504021 -0.1115824  0.095698779
+## 91        0.1  -0.4 -1.8044462 group_1 -0.008504021 -0.1115824 -0.162591905
+## 97        0.1  -0.4  4.2027854 group_1 -0.008504021 -0.1115824 -0.266174056
+## 103       0.1  -0.4  1.1056010 group_1 -0.008504021 -0.1115824 -0.057281779
+## 109       0.1  -0.4 -0.3406310 group_1 -0.008504021 -0.1115824  0.313795623
+## 115       0.1  -0.4 -2.3705324 group_1 -0.008504021 -0.1115824 -0.320525119
+##              y
+## 1    0.7617429
+## 7    1.6467883
+## 13  -0.9773598
+## 19   0.8041306
+## 25   1.3857207
+## 31  -0.9087596
+## 37  -1.7666138
+## 43  -0.6574513
+## 49   2.5517436
+## 55  -0.8059003
+## 61  -0.4819069
+## 67   0.1817110
+## 73  -2.4896385
+## 79  -0.4106938
+## 85   0.2739634
+## 91   0.8520269
+## 97  -2.3247490
+## 103 -0.5313918
+## 109  0.5795524
+## 115  0.9836934</code></pre>
+</section>
+
+<section id="plot-the-data-3" class="title-slide slide level1">
+<h1>Plot the data</h1>
+<p><em>relation between the predictor and response per level of random
+effect</em></p>
+<p><img src="02a_Lecture_LMMs_files/figure-revealjs/plot%20simu-randSlope%20data%20relation-1.png" width="80%" height="80%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="fit-the-model-with-random-intercept-and-slope"
+class="title-slide slide level1">
+<h1>Fit the model with random intercept and slope</h1>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>mod_randsl_cor <span class="ot">&lt;-</span> <span class="fu">lmer</span>(y <span class="sc">~</span> x <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> x<span class="sc">|</span>group), <span class="at">data =</span> Weight_simSl, <span class="at">REML =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod_randsl_cor)</span></code></pre></div>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: y ~ x + (1 + x | group)
+##    Data: Weight_simSl
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##     13.1     29.8     -0.6      1.1      114 
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -1.93352 -0.68718  0.03008  0.71588  2.17853 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev. Corr 
+##  group    (Intercept) 0.073107 0.27038       
+##           x           0.008325 0.09124  -0.96
+##  Residual             0.048002 0.21909       
+## Number of obs: 120, groups:  group, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  0.05281    0.11227    0.47
+## x           -0.47882    0.03873  -12.36
+## 
+## Correlation of Fixed Effects:
+##   (Intr)
+## x -0.922</code></pre>
+</section>
+
+<section id="interpreting-the-output" class="title-slide slide level1">
+<h1>Interpreting the output</h1>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: y ~ x + (1 + x | group)
+##    Data: Weight_simSl
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##     13.1     29.8     -0.6      1.1      114 
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -1.93352 -0.68718  0.03008  0.71588  2.17853 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev. Corr 
+##  group    (Intercept) 0.073107 0.27038       
+##           x           0.008325 0.09124  -0.96
+##  Residual             0.048002 0.21909       
+## Number of obs: 120, groups:  group, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  0.05281    0.11227    0.47
+## x           -0.47882    0.03873  -12.36
+## 
+## Correlation of Fixed Effects:
+##   (Intr)
+## x -0.922</code></pre>
+<ul>
+<li class="fragment">Main difference compared to the output from the
+random intercept model is in the <strong>Random effects</strong> part.
+In addition to the estimate of variance for the random intercept we also
+see the variance estimate for random slope, i.e. 0.01.</li>
+</ul>
+</section>
+
+<section id="interpreting-the-output-1"
+class="title-slide slide level1">
+<h1>Interpreting the output</h1>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: y ~ x + (1 + x | group)
+##    Data: Weight_simSl
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##     13.1     29.8     -0.6      1.1      114 
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -1.93352 -0.68718  0.03008  0.71588  2.17853 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev. Corr 
+##  group    (Intercept) 0.073107 0.27038       
+##           x           0.008325 0.09124  -0.96
+##  Residual             0.048002 0.21909       
+## Number of obs: 120, groups:  group, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  0.05281    0.11227    0.47
+## x           -0.47882    0.03873  -12.36
+## 
+## Correlation of Fixed Effects:
+##   (Intr)
+## x -0.922</code></pre>
+<ul>
+<li class="fragment">We also see the estimated correlation between the
+random intercept and slope, in this case it is -0.96<br />
+</li>
+<li class="fragment"><span style="color:orange">Why do we have 114
+degrees of freedom?</span></li>
+</ul>
+</section>
+
+<section id="plot-predictions-2" class="title-slide slide level1">
+<h1>Plot predictions</h1>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>new.slope <span class="ot">&lt;-</span> new.dat</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>new.slope<span class="sc">$</span>pred_fix <span class="ot">&lt;-</span> <span class="fu">predict</span>(mod_randsl_cor, <span class="at">newdata =</span> new.slope, <span class="at">re.form =</span> <span class="sc">~</span> <span class="dv">0</span>)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>new.slope<span class="sc">$</span>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(mod_randsl_cor, <span class="at">newdata =</span> new.slope, <span class="at">re.form =</span> <span class="cn">NULL</span>)</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> new.slope, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> pred, <span class="at">group =</span> group, <span class="at">col =</span> group)) <span class="sc">+</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">lty =</span> <span class="dv">3</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> new.slope, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> pred_fix), <span class="at">col =</span> <span class="st">&#39;black&#39;</span>) <span class="sc">+</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&#39;Standardized temperature&#39;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&#39;Standardized morphology&#39;</span>)</span></code></pre></div>
+<p><img src="02a_Lecture_LMMs_files/figure-revealjs/RSlope%20plot%20predictions-1.png" width="50%" height="50%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="random-effect-model-math" class="title-slide slide level1">
+<h1>Random effect model: math</h1>
+<p>Mixed effect model without the fixed effect(s), except for the fixed
+intercept.</p>
+<p><span class="math inline">\(\mathbf{Y}_\mathit{i} =\alpha + b_i
++\epsilon_i\)</span></p>
+<p>where</p>
+<p><span class="math inline">\(b_i \sim N(0, \lambda)\)</span>,<br />
+<span class="math inline">\(\epsilon \sim N(0, \phi)\)</span></p>
+</section>
+
+<section id="fit-random-effect-model" class="title-slide slide level1">
+<h1>Fit random-effect model</h1>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>mod_randEf <span class="ot">&lt;-</span> <span class="fu">lmer</span>(y <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>group), <span class="at">data =</span> Weight_sim, <span class="at">REML =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod_randEf)</span></code></pre></div>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: y ~ 1 + (1 | group)
+##    Data: Weight_sim
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##    302.3    310.6   -148.1    296.3      117 
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -2.38083 -0.62052  0.03001  0.62147  2.47272 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  group    (Intercept) 0.1959   0.4426  
+##  Residual             0.6262   0.7913  
+## Number of obs: 120, groups:  group, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)   0.1019     0.1946   0.524</code></pre>
+</section>
+
+<section id="random-effect-model" class="title-slide slide level1">
+<h1>Random-effect model</h1>
+<p><span style="color:orange"> Why would we need such a model? When?
+</span></p>
+<ul>
+<li class="fragment">Imagine you want to know whether in different
+locations species richness differs (irrespective of any
+predictors)<br />
+</li>
+<li class="fragment">Or whether the move step lengths of different
+individuals differ, on average<br />
+</li>
+<li class="fragment">meta-analysis (some forms)</li>
+</ul>
+</section>
+
+<section id="model-with-uncorrelated-random-intercept-and-slope"
+class="title-slide slide level1">
+<h1>Model with uncorrelated random intercept and slope</h1>
+<p>Why? When?</p>
+<p>We specify it using the following syntax for the random structure:
+<code>(1 | group) + (0 + x | group)</code>.</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>mod_uncorSl <span class="ot">&lt;-</span> <span class="fu">lmer</span>(y <span class="sc">~</span> x <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> group) <span class="sc">+</span> (<span class="dv">0</span> <span class="sc">+</span> x <span class="sc">|</span> group), <span class="at">data =</span> Weight_simSl, <span class="at">REML =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod_uncorSl)</span></code></pre></div>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: y ~ x + (1 | group) + (0 + x | group)
+##    Data: Weight_simSl
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##     21.8     35.8     -5.9     11.8      115 
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -2.04516 -0.66494 -0.00945  0.63497  2.31688 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  group    (Intercept) 0.069674 0.26396 
+##  group.1  x           0.007582 0.08708 
+##  Residual             0.048065 0.21924 
+## Number of obs: 120, groups:  group, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  0.05002    0.10970   0.456
+## x           -0.47489    0.03714 -12.786
+## 
+## Correlation of Fixed Effects:
+##   (Intr)
+## x -0.011</code></pre>
+</section>
+
+<section id="is-correlation-essential" class="title-slide slide level1">
+<h1>Is correlation essential?</h1>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>mod_uncorSl_REML <span class="ot">&lt;-</span> <span class="fu">lmer</span>(y <span class="sc">~</span> x <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> group) <span class="sc">+</span> (<span class="dv">0</span> <span class="sc">+</span> x <span class="sc">|</span> group), <span class="at">data =</span> Weight_simSl, <span class="at">REML =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>mod_randsl_cor_REML <span class="ot">&lt;-</span> <span class="fu">lmer</span>(y <span class="sc">~</span> x <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> x<span class="sc">|</span> group), <span class="at">data =</span> Weight_simSl, <span class="at">REML =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(mod_uncorSl_REML); <span class="fu">AIC</span>(mod_randsl_cor_REML)</span></code></pre></div>
+<pre><code>## [1] 28.99079</code></pre>
+<pre><code>## [1] 22.02796</code></pre>
+<p>Attention: to compare these models that differ in their random
+structure using AIC we should fit both models with REML, i.e. restricted
+maximum likelihood. More details on ML and REML are coming in the next
+lecture!</p>
+</section>
+
+<section id="checking-up" class="title-slide slide level1">
+<h1>Checking up</h1>
+<ul>
+<li class="fragment"><span style="color:orange"> Is it better to have
+the data with more levels of the random factor or with more data points
+per level?</span><br />
+</li>
+<li class="fragment"><span style="color:orange"> What is the absolute
+minimum of the levels of random effect?</span></li>
+</ul>
+</section>
+
+<section id="recap-terms" class="title-slide slide level1">
+<h1>Recap: terms</h1>
+<table>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Fitted values</td>
+<td>Model estimates for existing observations</td>
+</tr>
+<tr class="even">
+<td>Predicted values</td>
+<td>Model estimates for novel observations</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section id="recap-terms-1" class="title-slide slide level1">
+<h1>Recap: terms</h1>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Fitted values</td>
+<td>Model estimates for existing observations</td>
+</tr>
+<tr class="even">
+<td>Predicted values</td>
+<td>Model estimates for novel observations</td>
+</tr>
+<tr class="odd">
+<td>Fixed effects</td>
+<td>Factorial or continuous predictors for which the slopes are
+estimated for each level or covariate without modelling a
+hyperparameter</td>
+</tr>
+<tr class="even">
+<td>Random effect</td>
+<td>Grouping factor for which the variance among levels is estimated by
+a hyperparameter</td>
+</tr>
+<tr class="odd">
+<td>Hyperparameter</td>
+<td>Unobservable parameter that models the variance among instances</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section id="recap-terms-2" class="title-slide slide level1">
+<h1>Recap: terms</h1>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Fitted values</td>
+<td>Model estimates for existing observations</td>
+</tr>
+<tr class="even">
+<td>Predicted values</td>
+<td>Model estimates for novel observations</td>
+</tr>
+<tr class="odd">
+<td>Fixed effects</td>
+<td>Factorial or continuous predictors for which the slopes are
+estimated for each level or covariate without modelling a
+hyperparameter</td>
+</tr>
+<tr class="even">
+<td>Random effect</td>
+<td>Grouping factor for which the variance among levels is estimated by
+a hyperparameter</td>
+</tr>
+<tr class="odd">
+<td>Hyperparameter</td>
+<td>Unobservable parameter that models the variance among instances</td>
+</tr>
+<tr class="even">
+<td>Best linear unbiased estimates (BLUE)</td>
+<td>Fitted values for specific fixed effect slopes</td>
+</tr>
+<tr class="odd">
+<td>Best linear unbiased predictors (BLUP)</td>
+<td>Fitted values for specific random effect levels (also known as
+Empirical Bayes estimators or conditional modes)</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section id="questions" class="title-slide slide level1">
+<h1>Questions?</h1>
+
+</section>
+
+<section id="literature" class="title-slide slide level1">
+<h1>Literature</h1>
+<span style = "font-size: 80%;">
+<ul style='text-align: left;'>
+<ul>
+<li class="fragment">Zuur AF, Ieno EN, Walker N, Saveliev AA, Smith GM
+(2009) Mixed-Effects Models and Extensions in Ecology with R. New York,
+Springer New York: XXII, 574 p.<br />
+</li>
+<li class="fragment">Bates D, Maechler M, Bolker BM, Walker SC (2014)
+Fitting Linear Mixed-Effects Models Using lme4. <em>arXiv</em>:
+1406.5823v1.<br />
+</li>
+<li class="fragment">Faraway JJ 2006. Extending the Linear Model with R:
+Generalized Linear, Mixed Effects and Nonparametric Regression Models
+Chapman and Hall, New York, 345 p.<br />
+</li>
+<li class="fragment">Schielzeth H, Dingemanse NJ, Nakagawa S, Westneat
+DF, Allegue H, Teplitsky C, Reale D, Dochtermann NA, Garamszegi LZ,
+Araya-Ajoy YG (2020) Robustness of linear mixed-effects models to
+violations of distributional assumptions. <em>Methods in Ecology and
+Evolution</em>, 11:1141–1152.<br />
+</li>
+<li class="fragment"><span style="color:blue">Code for simulating the
+data is inspired by a session at the IZW Stats Meeting given my Alex
+Courtiol some years ago</span>
+</ul></li>
+</ul>
+</section>
+    </div>
+  </div>
+
+  <script src="02a_Lecture_LMMs_files/reveal.js-3.3.0.1/lib/js/head.min.js"></script>
+  <script src="02a_Lecture_LMMs_files/reveal.js-3.3.0.1/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: true,
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        slideNumber: true,
+        // Push each slide change to the browser history
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: false,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Opens links in an iframe preview overlay
+        previewLinks: true,
+        // Transition style
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+
+
+        // Optional reveal.js plugins
+        dependencies: [
+        ]
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>
