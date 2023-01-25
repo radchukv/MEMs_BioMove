@@ -65,18 +65,20 @@ The practical exercise will be either guided by me or to be performed by you and
 
 
 # Contents of the course
+>
 Day 1:    
-
-- Recap of linear model, diagnostics and inference    
+>
+ - Recap of linear model, diagnostics and inference    
 - Intro to linear mixed-effects model     
 - Random intercept and random slope models     
 
+> 
 Day 2:   
-
+>
 - Model diagnostics for mixed-effects models    
 - Model inference, hypothesis testing     
 - More complex random structures: temporal autocorrelation, non-Gaussian family     
-- a teaser on multivariate stats      
+- a teaser on multivariate stats   
 
 # Contents of the course
 Day 3:    
