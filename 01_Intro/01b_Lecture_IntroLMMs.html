@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Radchuk Viktoriia" />
+  <meta name="dcterms.date" content="2022-12-19" />
+  <title>Introduction: Mixed-effects models</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="01b_Lecture_IntroLMMs_files/reveal.js-3.3.0.1/css/reveal.css"/>
+
+
+
+<link rel="stylesheet" href="01b_Lecture_IntroLMMs_files/reveal.js-3.3.0.1/css/theme/simple.css" id="theme">
+
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+
+<!-- Printing and PDF exports -->
+<script id="paper-css" type="application/dynamic-css">
+
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+
+@media print {
+
+	/* SECTION 1: Set default width, margin, float, and
+	   background. This prevents elements from extending
+	   beyond the edge of the printed page, and prevents
+	   unnecessary background images from printing */
+	html {
+		background: #fff;
+		width: auto;
+		height: auto;
+		overflow: visible;
+	}
+	body {
+		background: #fff;
+		font-size: 20pt;
+		width: auto;
+		height: auto;
+		border: 0;
+		margin: 0 5%;
+		padding: 0;
+		overflow: visible;
+		float: none !important;
+	}
+
+	/* SECTION 2: Remove any elements not needed in print.
+	   This would include navigation, ads, sidebars, etc. */
+	.nestedarrow,
+	.controls,
+	.fork-reveal,
+	.share-reveal,
+	.state-background,
+	.reveal .progress,
+	.reveal .backgrounds {
+		display: none !important;
+	}
+
+	/* SECTION 3: Set body font face, size, and color.
+	   Consider using a serif font for readability. */
+	body, p, td, li, div {
+		font-size: 20pt!important;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		color: #000;
+	}
+
+	/* SECTION 4: Set heading font face, sizes, and color.
+	   Differentiate your headings from your body text.
+	   Perhaps use a large sans-serif for distinction. */
+	h1,h2,h3,h4,h5,h6 {
+		color: #000!important;
+		height: auto;
+		line-height: normal;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		text-shadow: 0 0 0 #000 !important;
+		text-align: left;
+		letter-spacing: normal;
+	}
+	/* Need to reduce the size of the fonts for printing */
+	h1 { font-size: 28pt !important;  }
+	h2 { font-size: 24pt !important; }
+	h3 { font-size: 22pt !important; }
+	h4 { font-size: 22pt !important; font-variant: small-caps; }
+	h5 { font-size: 21pt !important; }
+	h6 { font-size: 20pt !important; font-style: italic; }
+
+	/* SECTION 5: Make hyperlinks more usable.
+	   Ensure links are underlined, and consider appending
+	   the URL to the end of the link for usability. */
+	a:link,
+	a:visited {
+		color: #000 !important;
+		font-weight: bold;
+		text-decoration: underline;
+	}
+	/*
+	.reveal a:link:after,
+	.reveal a:visited:after {
+		content: " (" attr(href) ") ";
+		color: #222 !important;
+		font-size: 90%;
+	}
+	*/
+
+
+	/* SECTION 6: more reveal.js specific additions by @skypanther */
+	ul, ol, div, p {
+		visibility: visible;
+		position: static;
+		width: auto;
+		height: auto;
+		display: block;
+		overflow: visible;
+		margin: 0;
+		text-align: left !important;
+	}
+	.reveal pre,
+	.reveal table {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.reveal pre code {
+		padding: 20px;
+		border: 1px solid #ddd;
+	}
+	.reveal blockquote {
+		margin: 20px 0;
+	}
+	.reveal .slides {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 0 !important;
+		zoom: 1 !important;
+
+		overflow: visible !important;
+		display: block !important;
+
+		text-align: left !important;
+		-webkit-perspective: none;
+		   -moz-perspective: none;
+		    -ms-perspective: none;
+		        perspective: none;
+
+		-webkit-perspective-origin: 50% 50%;
+		   -moz-perspective-origin: 50% 50%;
+		    -ms-perspective-origin: 50% 50%;
+		        perspective-origin: 50% 50%;
+	}
+	.reveal .slides section {
+		visibility: visible !important;
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		display: block !important;
+		overflow: visible !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 60px 20px !important;
+		z-index: auto !important;
+
+		opacity: 1 !important;
+
+		page-break-after: always !important;
+
+		-webkit-transform-style: flat !important;
+		   -moz-transform-style: flat !important;
+		    -ms-transform-style: flat !important;
+		        transform-style: flat !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+
+		-webkit-transition: none !important;
+		   -moz-transition: none !important;
+		    -ms-transition: none !important;
+		        transition: none !important;
+	}
+	.reveal .slides section.stack {
+		padding: 0 !important;
+	}
+	.reveal section:last-of-type {
+		page-break-after: avoid !important;
+	}
+	.reveal section .fragment {
+		opacity: 1 !important;
+		visibility: visible !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+	}
+	.reveal section img {
+		display: block;
+		margin: 15px 0px;
+		background: rgba(255,255,255,1);
+		border: 1px solid #666;
+		box-shadow: none;
+	}
+
+	.reveal section small {
+		font-size: 0.8em;
+	}
+
+}  
+</script>
+
+
+<script id="pdf-css" type="application/dynamic-css">
+    
+/**
+ * This stylesheet is used to print reveal.js
+ * presentations to PDF.
+ *
+ * https://github.com/hakimel/reveal.js#pdf-export
+ */
+
+* {
+	-webkit-print-color-adjust: exact;
+}
+
+body {
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Remove any elements not needed in print. */
+.nestedarrow,
+.reveal .controls,
+.reveal .progress,
+.reveal .playback,
+.reveal.overview,
+.fork-reveal,
+.share-reveal,
+.state-background {
+	display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-shadow: 0 0 0 #000 !important;
+}
+
+.reveal pre code {
+	overflow: hidden !important;
+	font-family: Courier, 'Courier New', monospace !important;
+}
+
+ul, ol, div, p {
+	visibility: visible;
+	position: static;
+	width: auto;
+	height: auto;
+	display: block;
+	overflow: visible;
+	margin: auto;
+}
+.reveal {
+	width: auto !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+.reveal .slides {
+	position: static;
+	width: 100%;
+	height: auto;
+
+	left: auto;
+	top: auto;
+	margin: 0 !important;
+	padding: 0 !important;
+
+	overflow: visible;
+	display: block;
+
+	-webkit-perspective: none;
+	   -moz-perspective: none;
+	    -ms-perspective: none;
+	        perspective: none;
+
+	-webkit-perspective-origin: 50% 50%; /* there isn't a none/auto value but 50-50 is the default */
+	   -moz-perspective-origin: 50% 50%;
+	    -ms-perspective-origin: 50% 50%;
+	        perspective-origin: 50% 50%;
+}
+
+.reveal .slides section {
+	page-break-after: always !important;
+
+	visibility: visible !important;
+	position: relative !important;
+	display: block !important;
+	position: relative !important;
+
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	min-height: 1px;
+
+	opacity: 1 !important;
+
+	-webkit-transform-style: flat !important;
+	   -moz-transform-style: flat !important;
+	    -ms-transform-style: flat !important;
+	        transform-style: flat !important;
+
+	-webkit-transform: none !important;
+	   -moz-transform: none !important;
+	    -ms-transform: none !important;
+	        transform: none !important;
+}
+
+.reveal section.stack {
+	margin: 0 !important;
+	padding: 0 !important;
+	page-break-after: avoid !important;
+	height: auto !important;
+	min-height: auto !important;
+}
+
+.reveal img {
+	box-shadow: none;
+}
+
+.reveal .roll {
+	overflow: visible;
+	line-height: 1em;
+}
+
+/* Slide backgrounds are placed inside of their slide when exporting to PDF */
+.reveal section .slide-background {
+	display: block !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: -1;
+}
+
+/* All elements should be above the slide-background */
+.reveal section>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Display slide speaker notes when 'showNotes' is enabled */
+.reveal .speaker-notes-pdf {
+	display: block;
+	width: 100%;
+	max-height: none;
+	left: auto;
+	top: auto;
+	z-index: 100;
+}
+
+/* Display slide numbers when 'slideNumber' is enabled */
+.reveal .slide-number-pdf {
+	display: block;
+	position: absolute;
+	font-size: 14px;
+}
+
+</script>
+
+
+<script>
+var style = document.createElement( 'style' );
+style.type = 'text/css';
+var style_script_id = window.location.search.match( /print-pdf/gi ) ? 'pdf-css' : 'paper-css';
+var style_script = document.getElementById(style_script_id).text;
+style.innerHTML = style_script;
+document.getElementsByTagName('head')[0].appendChild(style);
+</script>
+
+    <script src="01b_Lecture_IntroLMMs_files/header-attrs-2.19/header-attrs.js"></script>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">Introduction: Mixed-effects models</h1>
+    <h2 class="author">Radchuk Viktoriia</h2>
+    <h3 class="date">2022-12-19</h3>
+</section>
+
+<section class="slide level2">
+
+<style type="text/css">
+.reveal ul {
+  font-size: 30px;
+}
+.reveal ol {
+  font-size: 30px;
+  margin-bottom: -10px;
+}
+.reveal p {
+ font-size: 30px;
+  margin-bottom: -10px;
+}
+.reveal  pre {
+  font-size: 14px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: -3px;
+}
+.reveal code.r{
+  font-size: 14px;
+}
+
+pre[class] {
+  max-height: 100px;
+}
+
+.scroll-100 {
+  max-height: 100px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+</style>
+</section>
+<section id="mixed-effects-models" class="title-slide slide level1">
+<h1>Mixed-effects models</h1>
+<p><em>What is it and when do we need them?</em></p>
+</section>
+
+<section id="non-independence-in-data" class="title-slide slide level1">
+<h1>Non-independence in data</h1>
+<ul>
+<li class="fragment">multiple observations per individual<br />
+
+<p style="text-align:center;">
+<img src="img/Starling_example.jpg" height = "300"/>
+</p>
+Q: How does infection affects the clutch size of common starlings?<br />
+We record the clutch size for a sample of females, over 3 years. Some
+females may on average have larger clutches than the others
+(e.g. because of their better body condition) but we are not interested
+in these differences.</li>
+</ul>
+</section>
+
+<section id="non-independence-in-data-1"
+class="title-slide slide level1">
+<h1>Non-independence in data</h1>
+<ul>
+<li class="fragment">data gathered in several plots and samples within
+same plots are more similar than from different ones
+<p style="text-align:center;">
+<img src="img/KettleHoles_Scheme.jpg" height = "300"/>
+</p>
+Q: how does agricultural practice affects plant species richness close
+to kettle holes?<br />
+We record plant species richness close to 10 different kettle holes (at
+each kettle hole we place 4 quadrats/relevees).</li>
+</ul>
+</section>
+
+<section id="non-independence-in-data-2"
+class="title-slide slide level1">
+<h1>Non-independence in data</h1>
+<p style="text-align:left;">
+We are not interested in predicting species richness for each specific
+kettle hole.<br />
+Rather, we aim to explain the variation in kettle holes associated with
+some fixed effects, like proximity to agricultural fields.<br />
+But the SR may be more similar for quadrats from the same compared to
+different kettle holes<br />
+Also, SR from the closer located kettle holes may be more similar:
+non-independent data.
+</p>
+<p><strong>samples (i.e. individuals or plots) introduce
+non-independence in the data structure</strong></p>
+</section>
+
+<section id="why-such-a-name" class="title-slide slide level1">
+<h1>Why such a name?</h1>
+<p><img data-src="img/download_ShakenNotStirred.jpeg"
+alt="Shaken not stirred" /></p>
+<ul>
+<li class="fragment">What is mixed???</li>
+<li class="fragment">it is not about cocktails</li>
+<li class="fragment">Mixed models are called so because they include two
+types of effects:
+<ul>
+<li class="fragment">fixed effects &amp; random effects</li>
+</ul></li>
+</ul>
+</section>
+
+<section id="fixed-effect" class="title-slide slide level1">
+<h1>Fixed effect</h1>
+<p>These are the effects we are used to in linear models. It is assumed
+that the values of a fixed variable in one study are the same as the
+values of the fixed variable in another study.</p>
+<p><span class="math inline">\(ClutchSize \sim ParasiteLoad +
+\epsilon\)</span>, <span class="math inline">\(\epsilon \sim N(0,
+\sigma^2)\)</span></p>
+<p><img src="01b_Lecture_IntroLMMs_files/figure-revealjs/linear%20model2-1.png" width="60%" height="60%" /></p>
+</section>
+
+<section id="fixed-effect-1" class="title-slide slide level1">
+<h1>Fixed effect</h1>
+<p>If predictor is a factor, we are typically interested in the effects
+of all levels of this factor. For example:</p>
+<ul>
+<li class="fragment"><p>Sex (F/M),<br />
+</p></li>
+<li class="fragment"><p>survival of Unicorns in Germany and
+France,<br />
+</p></li>
+<li class="fragment"><p>treatment (polluted / not; predator present /
+absent)</p>
+<p>There maybe more levels than those measured (DE &amp; FR) but we are
+<strong>SPECIFICALLY</strong> interested to know the response for only
+those two levels</p></li>
+</ul>
+</section>
+
+<section id="random-effect" class="title-slide slide level1">
+<h1>Random effect</h1>
+<p>“Random effects” are assumed to be values that are drawn from a
+larger population of values and thus will represent them. One can think
+of the values of random variables as representing a random sample of all
+possible values or instances of that variable.</p>
+</section>
+
+<section id="random-effect-1" class="title-slide slide level1">
+<h1>Random effect</h1>
+<ul>
+<li class="fragment">Data has several or many levels of the factor, but
+we are not interested in predicting to each of those levels<br />
+Q: how does starling weight changes with the latitude?<br />
+We measure weight of starlings in DE, FR, NL, UK, UA, BE, IT, SE, TR,
+CH.
+<p style="text-align:center;">
+<img src="img/Sturnus_vulgaris_map.png" height = "220"/>
+</p>
+We are not interested in what is the weight of the individuals in each
+specific country, we are interested in average weight of the species
+across the countries.</li>
+</ul>
+</section>
+
+<section id="random-effect-2" class="title-slide slide level1">
+<h1>Random effect</h1>
+<ul>
+<li class="fragment"><p>Usually &gt;5 levels to be able to consider as
+random effect</p>
+<p><em>It does not make sense to estimate a random effect; instead, we
+estimate the parameters that describe the distribution of this random
+effect.</em></p></li>
+</ul>
+</section>
+
+<section id="decision" class="title-slide slide level1">
+<h1>Decision</h1>
+<ul>
+<li class="fragment"><p>Some decision is required when to use fixed and
+when to use random effects. It may be somewhat subjective. Sometimes the
+choice is clear and obvious, in other cases the views (of statisticians)
+may differ.</p></li>
+<li class="fragment"><p>Obviously fixed effects: Sex, treatment
+(e.g. polluted /not; infected / not), age.</p></li>
+<li class="fragment"><p>Effects that may require some judgement:</p>
+<ul>
+<li class="fragment">year (we are in principle not interested in knowing
+survival in particular years; unless we only measured in two
+years!)</li>
+<li class="fragment">country, location, species.</li>
+</ul></li>
+</ul>
+</section>
+
+<section id="you-decide" class="title-slide slide level1">
+<h1>You decide</h1>
+<ul>
+<li class="fragment">Species richness studied close to 3 kettle holes
+only. Will we treat kettle hole as a fixed or a mixed effect?</li>
+<li class="fragment">We studied the impact of landscape of fear on two
+species: rats and voles. Is species to be treated as fixed or mixed
+effect?</li>
+<li class="fragment">and if we had looked at 9 rodent species?</li>
+</ul>
+</section>
+
+<section id="terminology" class="title-slide slide level1">
+<h1>Terminology</h1>
+<p>may be confusing</p>
+<p>You may see such terms:</p>
+<ul>
+<li class="fragment">Hierarchical linear models</li>
+<li class="fragment">Variance components</li>
+<li class="fragment">Random intercepts and slopes</li>
+<li class="fragment">Random effects</li>
+<li class="fragment">Random coefficients</li>
+<li class="fragment">Multilevel models</li>
+</ul>
+</section>
+
+<section id="question" class="title-slide slide level1">
+<h1>Question</h1>
+<ul>
+<li class="fragment">We learned about models with fixed effects only
+(e.g. a linear model) and models with both random and fixed effects
+(i.e. mixed-effects models).</li>
+<li class="fragment">Can there be models with random effect(s)
+only?</li>
+</ul>
+</section>
+
+<section id="questions" class="title-slide slide level1">
+<h1>Questions?</h1>
+
+</section>
+
+<section id="literature" class="title-slide slide level1">
+<h1>Literature</h1>
+<span style = "font-size: 90%;">
+<ul style='text-align: left;'>
+<ul>
+<li class="fragment">Zuur AF, Ieno EN, Walker N, Saveliev AA, Smith GM
+(2009) Mixed-Effects Models and Extensions in Ecology with R. New York,
+Springer New York: XXII, 574 p.<br />
+</li>
+<li class="fragment">Faraway JJ 2006. Extending the Linear Model with R:
+Generalized Linear, Mixed Effects and Nonparametric Regression Models
+Chapman and Hall, New York, 345 p.</span>
+</ul></li>
+</ul>
+</section>
+    </div>
+  </div>
+
+  <script src="01b_Lecture_IntroLMMs_files/reveal.js-3.3.0.1/lib/js/head.min.js"></script>
+  <script src="01b_Lecture_IntroLMMs_files/reveal.js-3.3.0.1/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: true,
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        slideNumber: true,
+        // Push each slide change to the browser history
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: false,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Opens links in an iframe preview overlay
+        previewLinks: true,
+        // Transition style
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+
+
+        // Optional reveal.js plugins
+        dependencies: [
+        ]
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>
