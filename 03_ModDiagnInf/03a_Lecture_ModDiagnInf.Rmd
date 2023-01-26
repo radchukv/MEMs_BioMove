@@ -1,0 +1,573 @@
+---
+title: "Mixed-effects models: model diagnostics and model inference"
+author: "Radchuk Viktoriia"
+date: "2022-1-3"
+output:
+  revealjs::revealjs_presentation:
+    self_contained: false
+    incremental: true
+    reveal_options:
+      slideNumber: true
+      previewLinks: true
+       
+---
+
+
+
+```{css, echo = FALSE}
+.reveal ul {
+  font-size: 30px;
+}
+.reveal ol {
+  font-size: 30px;
+  margin-bottom: -10px;
+}
+.reveal p {
+ font-size: 30px;
+  margin-bottom: -10px;
+}
+.reveal  pre {
+  font-size: 14px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: -2px;
+}
+.reveal code.r{
+  font-size: 14px;
+}
+
+pre[class] {
+  max-height: 200px;
+}
+
+.scroll-100 {
+  max-height: 100px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+library(tidyverse)
+library(lme4)
+library(magrittr)
+library(spaMM)
+library(DHARMa)
+```
+
+# Model diagnostics
+
+<span style= "color:orange"> Do you remember the assumptions of the linear model? </span>   
+
+
+
+
+
+# Assumptions of linear mixed-effects models    
+- independence of the data points,    
+- linearity of the relation between predictor(s) and response,   
+- homogeneity (homoscedasticity) of residuals,   
+- normal distribution of residuals,     
+- <span style = "color:green">mean independence of the random effects of covariates (exogeneity),</span>     
+- <span style = "color:green">normal distribution of random effects,</span>     
+- <span style = "color:green">independence and identical distribution of random effects ACROSS random levels.</span>    
+
+# Difficulty in assessing all assumptions
+
+- assessing normality of random effects is difficult because the data usually carry little information to assess the distribution,            
+- most standard R packages do not feature the ready tests (similar to using (`plot(mod)` for linear models)),  
+- assessing whether the distributional assumptions are met is even more difficult for generalised linear mixed-effects models (assume other distribution than Normal, e.g. Poisson or Binomial),      
+- BUT: a rather recent R package uses simulation-based approach to help assess the assumptions.   
+
+# Recommended diagnostics
+To demonstrate the diagnostics plots that are usually recommended, let us use the data we already worked with, focusing on the relation between phenology and temperature across several bird species.    
+```{r read&prep data, echo = TRUE}
+dat <- read.csv(file = here::here('data', 'dat_phen_temp_subs.csv'))
+dat_fac <- dat %>%
+  mutate_if(is.character, as.factor) %>% 
+  mutate(ID = as.factor(ID))
+str(dat_fac)
+
+```
+
+# Fit the model with random slope    
+Extract residuals using `resid()` function and fitted values using `fitted()`.
+```{r mod-spSlope spaMM, echo= TRUE}
+mod <- fitme(Trait_mean ~ det_Clim + (1 + det_Clim|Species), data = dat_fac, method = 'REML')
+res <- resid(mod)
+res[1:10]
+fit <- fitted(mod)
+fit[1:10]
+```
+
+# Prepare a dataset with the residuals
+```{r dataset resid, echo= TRUE}
+dat_diag <- cbind(dat_fac, 'Resid' = res, 'Fitted' = fit)
+head(dat_diag)
+```
+
+
+# Recommended diagnostics 
+1.1. linearity of the relation between predictor and response
+```{r resid vs fitted, echo = TRUE, out.width = '60%', fig.align='center'}
+ggplot(dat_diag, aes(x = Fitted, y = res)) +
+  geom_point() + xlab('Fitted values') +
+  ylab('Standardised residuals') + 
+  geom_hline(yintercept = 0, lty = 2) + theme_bw()
+
+```
+
+# Recommended diagnostics
+1.2. linearity of the relation between predictor and response
+```{r resid vs predictor, echo = TRUE, out.width = '60%', fig.align='center'}
+ggplot(dat_diag, aes(x = det_Clim, y = res)) +
+  geom_point() + xlab('Standardized temperature') +
+  ylab('Standardised residuals') + 
+  geom_hline(yintercept = 0, lty = 2) + theme_bw()
+
+```
+
+
+# Recommended diagnostics 
+2. normality of the residuals   
+```{r normality, echo = TRUE, out.width = '60%', fig.align='center'}
+qqnorm(res, pch = 16)
+qqline(res, lty = 2, lwd =1.3)
+
+```
+
+# Recommended diagnostics 
+<span style = font-size:70%;">
+3. homogeneity of residuals   
+We plot here a so-called Scale-location plot. Do you recall what it shows and how to interpret it?</span>    
+```{r homog resid, echo = TRUE, out.width='50%', fig.align='center', message = FALSE}
+dat_diag$SqrtRes <- sqrt(abs(dat_diag$Resid))  ## calculating sqrt of absolute residuals for the Scale-Location plot
+ggplot(dat_diag, aes(x = Fitted, y = SqrtRes)) +
+  geom_point() + geom_smooth(method = 'loess', se = FALSE) +
+  ylab(expression(sqrt(abs(resid)))) + xlab('Fitted values') +
+  theme_bw()
+```
+
+
+
+# Recommended diagnostics
+4. normality of the random effects
+```{r randomEff Norm, echo = TRUE, out.width='60%', fig.align='center'}
+randE <- ranef(mod)$`( 1 + det_Clim | Species )`
+randE <- as.data.frame(randE)
+qqnorm(randE$det_Clim, pch = 16)
+qqline(randE$det_Clim, lwd =1.3, lty = 2)
+
+# histogram is not always obvious as the number of levels can be low, as in our case
+hist(randE$det_Clim, breaks = 5, border=NA, col = 'black')
+```
+This example clearly demonstrates that it is not easy to verify the assumption of normality of the random effects
+
+# Recommended diagnostics
+5.1. homogeneity of residuals among levels of random factors
+```{r homog resid-per level, echo = TRUE, out.width='60%', fig.align='center'}
+ggplot(dat_diag, aes(x = Resid, y = Species)) + geom_boxplot() +
+  theme_bw()
+
+```
+
+# Recommended diagnostics
+5.2. homogeneity of residuals among levels of random factors    
+```{r homog resid-per level facet, echo = TRUE, out.width='60%', fig.align='center'}
+ggplot(dat_diag, aes(x = Fitted, y = Resid)) + geom_point() +
+  facet_wrap(vars(Species)) +
+  theme_bw() +
+  geom_hline(yintercept = 0, col = 'blue')
+
+```
+
+# DHARMa - a package for model diagnostics
+
+- developed by Prof. Florian Hartig from the University of Regensburg      
+- stands for “Diagnostics for HierArchical Regression Models”    
+- "In Hinduism, dharma signifies behaviours that are considered to be in accord with rta, the order that makes life and universe possible, and includes duties, rights, laws, conduct, virtues and ‘right way of living’"    
+- <p align="center" width="100%">
+![Florian Hartig](img/FlorianHartigpic.jpeg) 
+</p>
+
+
+# Shortly how DHARMa works
+1. Fit the model    
+2. Simulate new response data using the fitted model     
+3. For each observation, calculate the empirical cumulative density function (eCDF) for the simulated observations. eCDF describes the possible values (and their probability) at the predictor combination of the observed value, assuming the fitted model is correct.
+
+# Shortly how DHARMa works
+<p style="text-align:center;">
+<img src="img/DHARMA_workings.png" width="300" height = "300"/>
+</p>
+
+The residual is defined as the value of the eCDF at the value of the observed data.      
+A residual of 0 means that all simulated values are larger than the observed value, and a residual of 0.5 means half of the simulated values are larger than the observed value.     
+For more info: [DHARMa](https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html#motivation)        
+
+
+
+# Packages and models supported by DHARMa
+
+- lm and glm    
+- lme4    
+- mgcv    
+- gamm4    
+- glmmTMB           
+- spaMM      
+- GLMMadaptive    
+- phyr    
+- brms   
+
+
+
+# What DHARMa returns
+Let us show it directly on the model we have fitted to the data    
+```{r simresid DHA, echo = TRUE, out.width= "60%", out.height= "40%", fig.align='center'}
+sim <- simulateResiduals(mod, plot = T)  
+
+```
+<span style = font-size:80%;">The option `plot = TRUE` directly produces the plot, disable it with `= F`.</span>
+
+# Interpreting DHARMa output
+The minimum/maximum values for the residuals are 0 and 1.      
+For a correctly specified model we expect:
+
+- a uniform (flat) distribution of the scaled residuals      
+- uniformity in y direction if we plot against any predictor.     
+
+- <span style = "color:blue">Important: uniform distribution is the only difference to the classically expected normal distribution of the residuals (because of the way the residuals are obtained here).</span>
+
+# Inspecting the output: QQ-plot
+```{r outSim QQplot, echo= TRUE, fig.align= 'center', out.width='40%'}
+plotQQunif(sim)
+
+```
+
+<span style = font-size:60%;"> QQ plot is used to detect overall deviations from the expected distribution (uniform). By default the function `plotQQunif()` also adds tests of the distributional assumption (KS test), dispersion and outliers. Note: outliers in DHARMa are values that are outside the simulation envelope, not in terms of a particular quantile. So, the number of the outliers will depend on the number of simulations. If outliers in terms of a particular quantile are desired, they can be requested with the function `outliers()`. </span>
+
+# Test of distributional assumptions
+- `testUniformity()` performs Kolmogorov-Smirnov test on whether the residuals are uniformly distributed. 
+
+```{r testsUnif, echo = TRUE, fig.align='center', out.width='60%'}
+testUniformity(sim, plot = F)
+
+```
+
+
+
+# Test of outliers
+<span style = font-size:70%;"> - `testOutliers()` tests if the number of outliers outside of the simulation envelope is larger or smaller than expected (uses bootstrap or can rely on binomial test, specified with the option `type=`)</span>
+```{r testsOutl, echo = TRUE, fig.align='center', out.width='30%'}
+testOutliers(sim)
+
+```
+
+
+
+# Test of dispersion
+<span style = font-size:80%;line-height:-0.4px;"> - `testDispersion()` provides several ways to test for over- or underdispersion. In short: by default the simulation-based dispersion test is used that compares the variance of observed raw residuals with the one of the simulated residuals. A sinificant ratio >1 indicates overdispersion, a signif. ratio < 1 - underdispersion.</span>
+
+```{r testsDisp, echo = TRUE, fig.align='center', out.width='60%'}
+testDispersion(sim, plot = F)
+
+```
+
+
+# Inspecting the output: Part2
+```{r ResvsPred, echo = TRUE, fig.align='center', out.width='50%'}
+plotResiduals(sim)
+```
+<span style = font-size:80%;">A plot of the residuals against the predicted value (or another variable). Simulation outliers  are highlighted as red stars. To detect deviations from uniformity in y-direction, the function calculates a quantile regression that compares the empirical 0.25, 0.5 and 0.75 quantiles in y direction (red solid lines) with the respective theoretical quantiles (dashed black/red lines) </span>
+
+
+# Test of quantiles
+`testQuantiles()` fits a quantile regression of residuals vs predicted value (this is default, a chosen predictor can be specified), and tests if this conforms to the expected quantile    
+```{r testQuan, echo =  TRUE}
+testQuantiles(sim, plot = F)
+
+```
+
+
+# Plot residuals vs predictor
+```{r resVSpred, echo = TRUE, fig.align='center', out.width='60%'}
+plotResiduals(sim, form = dat_fac$det_Clim)
+```
+
+
+# Test of temporal autocorrelation
+We first need to extract a single study because there are multiple species and their studies go over different time periods and somewhat different durations (as we have seen before).     
+Let us get the data for the study 1 and recalculate the residuals only for this data subset.  
+
+# Temporal autocorrelation: study 1
+```{r testAutocor, echo = TRUE, fig.align='center', out.width= '50%'}
+sim_1 <- recalculateResiduals(sim, sel = dat_fac$ID == 1)
+testTemporalAutocorrelation(sim_1, time = dat_fac$Year[dat_fac$ID == 1])
+
+```
+
+
+# Function to test autocorrelation per study
+
+```{r fun testAutocor, echo = TRUE, fig.align='center', out.width= '60%'}
+
+levels(dat_fac$ID)
+
+# a little function to perform the temp autocor test per study
+fun_autocor <- function(simulatedObj = sim, data = dat_fac, ID = 1){
+sim_subset <- recalculateResiduals(simulatedObj, sel = data$ID == ID)
+testAut <- testTemporalAutocorrelation(sim_subset, time = data$Year[data$ID == ID], plot = F)
+return(list(testAut, data.frame(DurbW = testAut$statistic, p = testAut$p.value, ID = ID)))  
+}
+
+```
+
+
+# Check how function works
+
+```{r use fun testAutocor, echo = TRUE, fig.align='center', out.width= '60%'}
+
+fun_autocor(sim, dat_fac, ID = 1)
+
+```
+
+
+# Test autocorrelation in all studies
+
+```{r testAutocor All Stud, echo = FALSE}
+dat_autoc <- data.frame(DurbW =numeric(), p = numeric())
+dat_autoc <- rbind(dat_autoc, fun_autocor(sim, dat_fac, 1)[[2]])
+for(i in unique(dat_fac$ID)[-1]){
+  dat_autoc <- rbind(dat_autoc, fun_autocor(sim, dat_fac, ID = i)[[2]])
+}
+
+```
+```{r testDisplayAutocor All Stud, echo = TRUE, fig.align='center', out.width= '40%'}
+hist(dat_autoc$p, breaks = 20)
+
+dat_autoc$sign <- ifelse(dat_autoc$p < 0.05,'Yes','No')
+sum(dat_autoc$sign == 'Yes')
+```
+
+
+# Detected issues
+We detected temporal autocorrelation in 8 out of 25 studies. An indication that it may be causing problems.    
+Other potential issues?     
+We will see how to deal with these more advanced topics in the next lecture.    
+
+# Model inference
+**Inference**: evaluating the strength of evidence in data for some statement about nature.    
+**Main method**: hypothesis testing. So, prior to fitting the model (and data collection) we formulate hypotheses (usually null and alternative one) about some phenomenon in nature.    
+Inference is thus about $\beta$, i.e. model parameters. We usually want to assess whether a specific predictor affects our response variable.    
+
+- <span style = "color:orange"> Could you please formulate a hypothesis (regarding your own research or just examplary one)? </span>   
+
+
+# What is ML and REML? 
+- ML stands for maximum likelihoood. Specifically, maximum likelihood estimation of model parameters.   
+- <span style = color:"orange";"> What are model parameters?</span>     
+- ML estimation is a method that allows to estimate values of model parameters. The parameter values are found so that they maximise the likelihood that the model we specified produced the observed data. 
+
+# Formal definition of ML
+The likelihood of the model given the data is equal to the probability density assumed for those data given those parameter values: 
+$${\mathcal {L}}(\theta \mid x) = P(x \mid \theta)$$
+
+where $\theta$ are is our model (the parameters we aim to estimate), and $x$ are the data points.  
+
+# The logic behind it in veeeery simplified terms
+We simulate the data using a linear model, assuming that phenology is advancing with temperature (we look at one species only, which we monitored during 50 years)   
+```{r simu-LM data}
+SimulateLin <- function(intercept, slope, n, var.error){
+  data <- data.frame(intercept = intercept, slope = slope, x = rnorm(n, 0, 2))
+  data$error <- rnorm(n, mean = 0, sd = sqrt(var.error))
+  data$y <- data$intercept + data$slope*data$x + data$error
+  return(data)
+}
+
+
+```
+
+# Our simulated data
+
+```{r check simu data, echo = TRUE, fig.align='center', out.width='50%'}
+set.seed(5)
+Weight_sim <- SimulateLin(intercept = 0.1, slope = -0.4, n = 50, 
+                          var.error = 0.2)
+plot(y ~ x, data = Weight_sim, pch = 19, xlab = "Temperature", 
+     ylab = "Phenology")
+```
+
+# Fit linear model to simulated data
+```{r fit mod, echo = TRUE, fig.align='center', out.width='60%'}
+mod <- lm(y ~ x, data = Weight_sim)
+summary(mod)
+Weight_sim$pred <- fitted(mod)
+```
+
+# Plot model fit
+```{r plot fitted mod, echo = TRUE, fig.align='center', out.width='50%'}
+plot(y ~ x, data = Weight_sim, pch = 19, xlab = "Temperature", ylab = "Phenology")
+lines(x= Weight_sim$x, y = fitted(mod), col = "red", lwd = 2)  # add the fitted line to the plot
+sigma2_res <- sum(resid(mod)^2) / nrow(Weight_sim)  # our variance
+deviance(mod)/nrow(Weight_sim)  # for lm variance is the same as the deviance
+```
+
+
+# Now we assume linear model and generate data under it
+```{r generData fun, echo = TRUE}
+determ_comp <- function(xvalues, intercept, slope){
+  yvalues <- intercept + slope*xvalues
+  return(yvalues)
+}
+
+DataGener_lm <- function(xvalues,params){
+  y_det <- determ_comp(xvalues, params$intercept, params$slope)  # get deterministic signal part
+  yvalues <- rnorm(length(y_det), y_det, sqrt(params$variance))     # add random nomrally distributed noise
+  return(yvalues)
+}
+
+```
+
+# Generate data under the model
+```{r generData, echo = TRUE, fig.align='center', out.width= '50%'}
+xvalues <- Weight_sim$x    # xvalues come from our observed data
+params <- list()  
+params$intercept <- 1            # set model parameters by eyeballing  the plot of the observed data
+params$slope <- -0.5 
+params$variance <- 0.3  
+
+yvals <- DataGener_lm(xvalues, params)
+plot(yvals ~ xvalues) 
+```
+
+# Generate plausible data under this model
+```{r DataUnderMod, echo = TRUE}
+PlotPossibleData <- function(xvalues, params, reps = 100){ 
+  samplesize <- length(xvalues)
+  res <- array(0, dim = c(samplesize,reps))   # storage array for results
+  for(i in 1:reps){
+    yvalues <- DataGener_lm(xvalues, params)
+    res[,i] <- yvalues
+  }
+      # boxplot of the results
+  boxplot(lapply(1:nrow(res), function(i) res[i,]), at = xvalues, xaxt = "n", main = "Plausible data under this model", 
+          ylab = "Weight", xlab = "Phenology", boxwex = 0.2)  ## boxwex option just makes the boxes narrower so that they are visible on x axis
+  cleanseq <- (seq(0, max(round(xvalues/100)), length=(max(round(xvalues/100)))+1))*100
+  axis(1, at = cleanseq, labels = cleanseq)    # label the x axis properly
+}
+
+```
+
+# Plot generated plausible data
+
+```{r Plot DataUnderMod, echo = TRUE, fig.align='center', out.width= '60%'}
+PlotPossibleData(xvalues, params, reps = 100)    # run the function to visualize the range of data that could be produced under this model
+# add the real data
+points(xvalues, Weight_sim$y, pch = 19, cex=1, col = "blue")
+```
+
+# Try again
+Choosing a new set of parameters  
+```{r newsim, echo = TRUE, fig.align='center', out.width='60%'}
+params$intercept <- 0
+params$slope <- -0.5 
+params$variance <- 0.3  
+PlotPossibleData(xvalues, params, reps = 100)    #  visualize the range of data plausible under this model
+points(xvalues, Weight_sim$y, pch = 19, cex=1, col = "blue")
+
+```
+
+# More formally
+So, we work to find the parameters $\theta$ that minimize the residuals (in case of Ordinary Least Square approach for linear models) or maximize the data likelihood under this model.   
+Specifically, we calculate the probability density for each data point under chosen parameter set.  
+```{r mod loglik, echo  = TRUE}
+Weight_sim$density <- dnorm(x = Weight_sim$x, mean = fitted(mod), sd = sqrt(sigma2_res))
+# for simplicity let us look at one data point only now
+oneObs <- Weight_sim[1, ]
+```
+
+
+# Probability density for one observation
+```{r Like plot, fig.align='center', echo = FALSE, out.width='60%'}
+par(mar = c(4, 4, 1, 1))
+curve(dnorm(x, mean = oneObs$pred, sd = sqrt(sigma2_res)), from = -2, to = 2, ylab = "Probability density", xlab = "Temperature",
+      ylim = c(0, 1.1))  
+abline(h = 0, lty = 2)
+abline(v = oneObs$pred, lty = 2, col = "blue")
+points(x = oneObs$pred, y = 0, pch = 19, col = "blue")
+points(x = oneObs$y, y = 0, pch = 19, col = 'green')
+abline(v = oneObs$y, lwd = 2, col = 'darkgreen')
+likelih_1obs <- dnorm(oneObs$y, oneObs$pred, sqrt(sigma2_res))
+likelih_1obs
+```
+
+# Model likelihood
+```{r log density, echo = TRUE}
+logLik(mod)[1]
+log(prod(Weight_sim$density))
+sum(log(Weight_sim$density))  
+```
+- <span style="color:orange">     Why are we getting -Inf with log(prod)? </span>       
+- Recall we just used eye-balled parameters, we did not really work towards maximizing the likelihood     
+
+# Restricted Maximum Likelihood
+- ML results in a bias of the variance estimates.    
+- I will spare you the math.  
+- REML applies a special matrix multiplication so that $\beta$ (slope and intercept) do not have to be considered anymore. As a result, it returns an unbiased estimate of variance.   
+- Thus: REML estimates of $\beta$ are not the same as those obtained with ML, especially if there are many covariates in the model.    
+
+# REML vs ML
+
+- ML produces unbiased estimates of the $\beta$ and thus should be used if we focus on the estimates of the fixed effects.     
+- REML produces unbiased estimates of variances and thus should be used if we focus on estimating random structure. For example, if we are interested in the variance among the levels of the random factor or want to compare the models with different random structures.      
+- <span style = "color:blue">To remember: "RE" in REML can be thought of as "Random Effects"</span>
+
+# Likelihood Ratio Test
+Assesses the goodness of fit of two competing models using the ratio of their likelihoods.   
+Likelihood ratio is calculated as follows: 
+$$\dfrac{\mathcal {L}_r}{\mathcal {L}}$$
+Where ${\mathcal {L}}$ is the maximum likelihood of the full fitted model and ${\mathcal {L}_r}$ is the maximum likelihood of the reduced model.   
+
+
+# Likelihood Ratio test
+We use `ln()` of this ratio, specifically 
+$-2 \times ln(\dfrac{\mathcal {L}_r}{\mathcal {L}})$
+
+This metric is also known as 'deviance'. It is approximately $\chi^2$ distributed with `r` degrees of freedom, where `r` is the number of parameters by which we reduced the full model.
+
+# Chi-squared distribution 
+By using the fact that log-likelihood is distributed according to $\chi^2$ we can estimate the statistical significance of any difference in log-likelihood between the full and the reduced models.  
+
+# Chi-squared distribution: example
+A visualization of the chi-squared distribution with 1 df, the Chi-squared for examplary two models is in red). Given the null hypothesis is true there is a `r  dchisq(4,1)` percent chance to obtain a deviance with that value. So we will reject the null hypothesis (under $\alpha$ of 0.05).
+```{r Chi2, echo = FALSE, fig.align='center', out.width= '50%'}
+curve(dchisq(x,1),0,10,ylab="probability density",xlab="x", main="Chi-Squared distribution, df=2")
+abline(v = 4, col = 'red')
+```
+
+
+
+# Checking up
+
+<span style = "color:orange;">
+- Why are we using log-Likelihood and not Likelihood itself?       
+- What is model inference?</span>
+
+# Questions?
+
+
+# Literature   
+<span style = "font-size: 80%;">
+<ul style='text-align: left;'> 
+- Zuur AF, Ieno EN, Walker N, Saveliev AA, Smith GM (2009) Mixed-Effects Models and Extensions in Ecology with R. New York, Springer New York: XXII, 574 p.   
+- Schielzeth H, Dingemanse NJ, Nakagawa S, Westneat DF, Allegue H, Teplitsky C, Reale D, Dochtermann NA, Garamszegi LZ, Araya-Ajoy YG (2020) Robustness of linear mixed-effects models to violations of distributional assumptions. _Methods in Ecology and Evolution_, 11:1141–1152.     
+- Bolker BM, Brooks ME, Clark CJ, Geange SW, Poulsen JR, Stevens MHH,  White J-SS (2008) Generalized linear mixed models: a practical guide for ecology and evolution. _Trends in Ecology and Evolution_, 24:3.     
+- Grilli L and Rampichini C (2014) Specification of random effects in multilevel models: a review. _Quality and Quality_, DOI: 10.1007/s11135-014-0060-5.    
+- Tredennik AT, Hooker G, Ellner SP, Adler PB (2021) A practical guide to selecting models for exploration, inference, and prediction in ecology. _Ecology_, 0:e03336.</span></ul>
+
+
+

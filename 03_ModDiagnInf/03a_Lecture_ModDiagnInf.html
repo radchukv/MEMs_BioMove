@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Radchuk Viktoriia" />
+  <title>Mixed-effects models: model diagnostics and model inference</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="03a_Lecture_ModDiagnInf_files/reveal.js-3.3.0.1/css/reveal.css"/>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="03a_Lecture_ModDiagnInf_files/reveal.js-3.3.0.1/css/theme/simple.css" id="theme">
+
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+
+<!-- Printing and PDF exports -->
+<script id="paper-css" type="application/dynamic-css">
+
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+
+@media print {
+
+	/* SECTION 1: Set default width, margin, float, and
+	   background. This prevents elements from extending
+	   beyond the edge of the printed page, and prevents
+	   unnecessary background images from printing */
+	html {
+		background: #fff;
+		width: auto;
+		height: auto;
+		overflow: visible;
+	}
+	body {
+		background: #fff;
+		font-size: 20pt;
+		width: auto;
+		height: auto;
+		border: 0;
+		margin: 0 5%;
+		padding: 0;
+		overflow: visible;
+		float: none !important;
+	}
+
+	/* SECTION 2: Remove any elements not needed in print.
+	   This would include navigation, ads, sidebars, etc. */
+	.nestedarrow,
+	.controls,
+	.fork-reveal,
+	.share-reveal,
+	.state-background,
+	.reveal .progress,
+	.reveal .backgrounds {
+		display: none !important;
+	}
+
+	/* SECTION 3: Set body font face, size, and color.
+	   Consider using a serif font for readability. */
+	body, p, td, li, div {
+		font-size: 20pt!important;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		color: #000;
+	}
+
+	/* SECTION 4: Set heading font face, sizes, and color.
+	   Differentiate your headings from your body text.
+	   Perhaps use a large sans-serif for distinction. */
+	h1,h2,h3,h4,h5,h6 {
+		color: #000!important;
+		height: auto;
+		line-height: normal;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		text-shadow: 0 0 0 #000 !important;
+		text-align: left;
+		letter-spacing: normal;
+	}
+	/* Need to reduce the size of the fonts for printing */
+	h1 { font-size: 28pt !important;  }
+	h2 { font-size: 24pt !important; }
+	h3 { font-size: 22pt !important; }
+	h4 { font-size: 22pt !important; font-variant: small-caps; }
+	h5 { font-size: 21pt !important; }
+	h6 { font-size: 20pt !important; font-style: italic; }
+
+	/* SECTION 5: Make hyperlinks more usable.
+	   Ensure links are underlined, and consider appending
+	   the URL to the end of the link for usability. */
+	a:link,
+	a:visited {
+		color: #000 !important;
+		font-weight: bold;
+		text-decoration: underline;
+	}
+	/*
+	.reveal a:link:after,
+	.reveal a:visited:after {
+		content: " (" attr(href) ") ";
+		color: #222 !important;
+		font-size: 90%;
+	}
+	*/
+
+
+	/* SECTION 6: more reveal.js specific additions by @skypanther */
+	ul, ol, div, p {
+		visibility: visible;
+		position: static;
+		width: auto;
+		height: auto;
+		display: block;
+		overflow: visible;
+		margin: 0;
+		text-align: left !important;
+	}
+	.reveal pre,
+	.reveal table {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.reveal pre code {
+		padding: 20px;
+		border: 1px solid #ddd;
+	}
+	.reveal blockquote {
+		margin: 20px 0;
+	}
+	.reveal .slides {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 0 !important;
+		zoom: 1 !important;
+
+		overflow: visible !important;
+		display: block !important;
+
+		text-align: left !important;
+		-webkit-perspective: none;
+		   -moz-perspective: none;
+		    -ms-perspective: none;
+		        perspective: none;
+
+		-webkit-perspective-origin: 50% 50%;
+		   -moz-perspective-origin: 50% 50%;
+		    -ms-perspective-origin: 50% 50%;
+		        perspective-origin: 50% 50%;
+	}
+	.reveal .slides section {
+		visibility: visible !important;
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		display: block !important;
+		overflow: visible !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 60px 20px !important;
+		z-index: auto !important;
+
+		opacity: 1 !important;
+
+		page-break-after: always !important;
+
+		-webkit-transform-style: flat !important;
+		   -moz-transform-style: flat !important;
+		    -ms-transform-style: flat !important;
+		        transform-style: flat !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+
+		-webkit-transition: none !important;
+		   -moz-transition: none !important;
+		    -ms-transition: none !important;
+		        transition: none !important;
+	}
+	.reveal .slides section.stack {
+		padding: 0 !important;
+	}
+	.reveal section:last-of-type {
+		page-break-after: avoid !important;
+	}
+	.reveal section .fragment {
+		opacity: 1 !important;
+		visibility: visible !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+	}
+	.reveal section img {
+		display: block;
+		margin: 15px 0px;
+		background: rgba(255,255,255,1);
+		border: 1px solid #666;
+		box-shadow: none;
+	}
+
+	.reveal section small {
+		font-size: 0.8em;
+	}
+
+}  
+</script>
+
+
+<script id="pdf-css" type="application/dynamic-css">
+    
+/**
+ * This stylesheet is used to print reveal.js
+ * presentations to PDF.
+ *
+ * https://github.com/hakimel/reveal.js#pdf-export
+ */
+
+* {
+	-webkit-print-color-adjust: exact;
+}
+
+body {
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Remove any elements not needed in print. */
+.nestedarrow,
+.reveal .controls,
+.reveal .progress,
+.reveal .playback,
+.reveal.overview,
+.fork-reveal,
+.share-reveal,
+.state-background {
+	display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-shadow: 0 0 0 #000 !important;
+}
+
+.reveal pre code {
+	overflow: hidden !important;
+	font-family: Courier, 'Courier New', monospace !important;
+}
+
+ul, ol, div, p {
+	visibility: visible;
+	position: static;
+	width: auto;
+	height: auto;
+	display: block;
+	overflow: visible;
+	margin: auto;
+}
+.reveal {
+	width: auto !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+.reveal .slides {
+	position: static;
+	width: 100%;
+	height: auto;
+
+	left: auto;
+	top: auto;
+	margin: 0 !important;
+	padding: 0 !important;
+
+	overflow: visible;
+	display: block;
+
+	-webkit-perspective: none;
+	   -moz-perspective: none;
+	    -ms-perspective: none;
+	        perspective: none;
+
+	-webkit-perspective-origin: 50% 50%; /* there isn't a none/auto value but 50-50 is the default */
+	   -moz-perspective-origin: 50% 50%;
+	    -ms-perspective-origin: 50% 50%;
+	        perspective-origin: 50% 50%;
+}
+
+.reveal .slides section {
+	page-break-after: always !important;
+
+	visibility: visible !important;
+	position: relative !important;
+	display: block !important;
+	position: relative !important;
+
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	min-height: 1px;
+
+	opacity: 1 !important;
+
+	-webkit-transform-style: flat !important;
+	   -moz-transform-style: flat !important;
+	    -ms-transform-style: flat !important;
+	        transform-style: flat !important;
+
+	-webkit-transform: none !important;
+	   -moz-transform: none !important;
+	    -ms-transform: none !important;
+	        transform: none !important;
+}
+
+.reveal section.stack {
+	margin: 0 !important;
+	padding: 0 !important;
+	page-break-after: avoid !important;
+	height: auto !important;
+	min-height: auto !important;
+}
+
+.reveal img {
+	box-shadow: none;
+}
+
+.reveal .roll {
+	overflow: visible;
+	line-height: 1em;
+}
+
+/* Slide backgrounds are placed inside of their slide when exporting to PDF */
+.reveal section .slide-background {
+	display: block !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: -1;
+}
+
+/* All elements should be above the slide-background */
+.reveal section>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Display slide speaker notes when 'showNotes' is enabled */
+.reveal .speaker-notes-pdf {
+	display: block;
+	width: 100%;
+	max-height: none;
+	left: auto;
+	top: auto;
+	z-index: 100;
+}
+
+/* Display slide numbers when 'slideNumber' is enabled */
+.reveal .slide-number-pdf {
+	display: block;
+	position: absolute;
+	font-size: 14px;
+}
+
+</script>
+
+
+<script>
+var style = document.createElement( 'style' );
+style.type = 'text/css';
+var style_script_id = window.location.search.match( /print-pdf/gi ) ? 'pdf-css' : 'paper-css';
+var style_script = document.getElementById(style_script_id).text;
+style.innerHTML = style_script;
+document.getElementsByTagName('head')[0].appendChild(style);
+</script>
+
+    <script src="03a_Lecture_ModDiagnInf_files/header-attrs-2.19/header-attrs.js"></script>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">Mixed-effects models: model diagnostics and model
+inference</h1>
+    <h2 class="author">Radchuk Viktoriia</h2>
+    <h3 class="date">2022-1-3</h3>
+</section>
+
+<section class="slide level2">
+
+<style type="text/css">
+.reveal ul {
+  font-size: 30px;
+}
+.reveal ol {
+  font-size: 30px;
+  margin-bottom: -10px;
+}
+.reveal p {
+ font-size: 30px;
+  margin-bottom: -10px;
+}
+.reveal  pre {
+  font-size: 14px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: -2px;
+}
+.reveal code.r{
+  font-size: 14px;
+}
+
+pre[class] {
+  max-height: 200px;
+}
+
+.scroll-100 {
+  max-height: 100px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+</style>
+</section>
+<section id="model-diagnostics" class="title-slide slide level1">
+<h1>Model diagnostics</h1>
+<p><span style="color:orange"> Do you remember the assumptions of the
+linear model? </span></p>
+</section>
+
+<section id="assumptions-of-linear-mixed-effects-models"
+class="title-slide slide level1">
+<h1>Assumptions of linear mixed-effects models</h1>
+<ul>
+<li class="fragment">independence of the data points,<br />
+</li>
+<li class="fragment">linearity of the relation between predictor(s) and
+response,<br />
+</li>
+<li class="fragment">homogeneity (homoscedasticity) of residuals,<br />
+</li>
+<li class="fragment">normal distribution of residuals,<br />
+</li>
+<li class="fragment"><span style="color:green">mean independence of the
+random effects of covariates (exogeneity),</span><br />
+</li>
+<li class="fragment"><span style="color:green">normal distribution of
+random effects,</span><br />
+</li>
+<li class="fragment"><span style="color:green">independence and
+identical distribution of random effects ACROSS random
+levels.</span></li>
+</ul>
+</section>
+
+<section id="difficulty-in-assessing-all-assumptions"
+class="title-slide slide level1">
+<h1>Difficulty in assessing all assumptions</h1>
+<ul>
+<li class="fragment">assessing normality of random effects is difficult
+because the data usually carry little information to assess the
+distribution,<br />
+</li>
+<li class="fragment">most standard R packages do not feature the ready
+tests (similar to using (<code>plot(mod)</code> for linear
+models)),<br />
+</li>
+<li class="fragment">assessing whether the distributional assumptions
+are met is even more difficult for generalised linear mixed-effects
+models (assume other distribution than Normal, e.g. Poisson or
+Binomial),<br />
+</li>
+<li class="fragment">BUT: a rather recent R package uses
+simulation-based approach to help assess the assumptions.</li>
+</ul>
+</section>
+
+<section id="recommended-diagnostics" class="title-slide slide level1">
+<h1>Recommended diagnostics</h1>
+<p>To demonstrate the diagnostics plots that are usually recommended,
+let us use the data we already worked with, focusing on the relation
+between phenology and temperature across several bird species.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&#39;data&#39;</span>, <span class="st">&#39;dat_phen_temp_subs.csv&#39;</span>))</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>dat_fac <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_if</span>(is.character, as.factor) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ID =</span> <span class="fu">as.factor</span>(ID))</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(dat_fac)</span></code></pre></div>
+<pre><code>## &#39;data.frame&#39;:    750 obs. of  20 variables:
+##  $ ID             : Factor w/ 25 levels &quot;1&quot;,&quot;21&quot;,&quot;22&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Year           : int  1953 1954 1955 1956 1957 1959 1960 1961 1962 1963 ...
+##  $ Study_Authors  : Factor w/ 13 levels &quot;Ahola_et_al&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Journal        : Factor w/ 7 levels &quot;Behavioural Ecology &amp; Sociobiology&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...
+##  $ Year_pub       : int  2009 2009 2009 2009 2009 2009 2009 2009 2009 2009 ...
+##  $ Title          : Factor w/ 8 levels &quot;Bergmann?s rule and climate change revisited: Disentangling environmental and genetic responses in a wild bird population&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...
+##  $ Species        : Factor w/ 7 levels &quot;Cyanistes caeruleus&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...
+##  $ Taxon          : Factor w/ 1 level &quot;Bird&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Location       : Factor w/ 17 levels &quot;Askainen&quot;,&quot;Boshoek, Antwerp&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Longitude      : num  21.8 21.8 21.8 21.8 21.8 ...
+##  $ Latitude       : num  60.6 60.6 60.6 60.6 60.6 ...
+##  $ Country        : Factor w/ 12 levels &quot;Belgium&quot;,&quot;Canada&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...
+##  $ Trait          : Factor w/ 4 levels &quot;ArrivalDate&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...
+##  $ Trait_Categ_det: Factor w/ 2 levels &quot;Arrival_Date&quot;,..: 2 2 2 2 2 2 2 2 2 2 ...
+##  $ Trait_Categ    : Factor w/ 1 level &quot;Phenological&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Trait_mean     : num  -1.444 -0.296 1.411 0.587 1.21 ...
+##  $ Trait_SE       : num  0.166 0.0842 0.2379 0.2411 0.2762 ...
+##  $ Clim           : num  3.426 1.296 -1.191 -0.631 0.757 ...
+##  $ det_Clim       : num  1.585 -0.222 -2.323 -1.903 -0.8 ...
+##  $ det_Clim2      : num  2.5111 0.0491 5.3941 3.6229 0.6402 ...</code></pre>
+</section>
+
+<section id="fit-the-model-with-random-slope"
+class="title-slide slide level1">
+<h1>Fit the model with random slope</h1>
+<p>Extract residuals using <code>resid()</code> function and fitted
+values using <code>fitted()</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">fitme</span>(Trait_mean <span class="sc">~</span> det_Clim <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> det_Clim<span class="sc">|</span>Species), <span class="at">data =</span> dat_fac, <span class="at">method =</span> <span class="st">&#39;REML&#39;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">resid</span>(mod)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>res[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span></code></pre></div>
+<pre><code>##           1           2           3           4           5           6 
+## -0.24026637 -0.46470771 -0.35419635 -0.85924963  0.60233739 -0.07069611 
+##           7           8           9          10 
+##  0.41105900 -0.32960582  0.48917829 -0.15466343</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">fitted</span>(mod)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>fit[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span></code></pre></div>
+<pre><code>##           1           2           3           4           5           6 
+## -1.20406814  0.16830713  1.76472364  1.44625910  0.60796203 -1.88272214 
+##           7           8           9          10 
+## -0.03267405 -0.92046294 -0.43288032  0.33740051</code></pre>
+</section>
+
+<section id="prepare-a-dataset-with-the-residuals"
+class="title-slide slide level1">
+<h1>Prepare a dataset with the residuals</h1>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dat_diag <span class="ot">&lt;-</span> <span class="fu">cbind</span>(dat_fac, <span class="st">&#39;Resid&#39;</span> <span class="ot">=</span> res, <span class="st">&#39;Fitted&#39;</span> <span class="ot">=</span> fit)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_diag)</span></code></pre></div>
+<pre><code>##   ID Year Study_Authors                   Journal Year_pub
+## 1  1 1953   Ahola_et_al Journal of Animal Ecology     2009
+## 2  1 1954   Ahola_et_al Journal of Animal Ecology     2009
+## 3  1 1955   Ahola_et_al Journal of Animal Ecology     2009
+## 4  1 1956   Ahola_et_al Journal of Animal Ecology     2009
+## 5  1 1957   Ahola_et_al Journal of Animal Ecology     2009
+## 6  1 1959   Ahola_et_al Journal of Animal Ecology     2009
+##                                                                                                                                    Title
+## 1 Great tits lay increasingly smaller clutches than selected for: a study of climate- and density-related changes in reproductive traits
+## 2 Great tits lay increasingly smaller clutches than selected for: a study of climate- and density-related changes in reproductive traits
+## 3 Great tits lay increasingly smaller clutches than selected for: a study of climate- and density-related changes in reproductive traits
+## 4 Great tits lay increasingly smaller clutches than selected for: a study of climate- and density-related changes in reproductive traits
+## 5 Great tits lay increasingly smaller clutches than selected for: a study of climate- and density-related changes in reproductive traits
+## 6 Great tits lay increasingly smaller clutches than selected for: a study of climate- and density-related changes in reproductive traits
+##       Species Taxon Location Longitude Latitude Country      Trait
+## 1 Parus major  Bird Askainen  21.83119 60.57173 Finland LayingDate
+## 2 Parus major  Bird Askainen  21.83119 60.57173 Finland LayingDate
+## 3 Parus major  Bird Askainen  21.83119 60.57173 Finland LayingDate
+## 4 Parus major  Bird Askainen  21.83119 60.57173 Finland LayingDate
+## 5 Parus major  Bird Askainen  21.83119 60.57173 Finland LayingDate
+## 6 Parus major  Bird Askainen  21.83119 60.57173 Finland LayingDate
+##   Trait_Categ_det  Trait_Categ Trait_mean  Trait_SE       Clim   det_Clim
+## 1     Laying_Date Phenological -1.4443345 0.1660056  3.4255952  1.5846563
+## 2     Laying_Date Phenological -0.2964006 0.0842285  1.2955357 -0.2215065
+## 3     Laying_Date Phenological  1.4105273 0.2378510 -1.1910119 -2.3225267
+## 4     Laying_Date Phenological  0.5870095 0.2411013 -0.6306547 -1.9034002
+## 5     Laying_Date Phenological  1.2102994 0.2761537  0.7568452 -0.8001298
+## 6     Laying_Date Phenological -1.9534183 0.1177711  4.8272023  2.4778228
+##    det_Clim2       Resid     Fitted
+## 1 2.51113553 -0.24026637 -1.2040681
+## 2 0.04906514 -0.46470771  0.1683071
+## 3 5.39413023 -0.35419635  1.7647236
+## 4 3.62293238 -0.85924963  1.4462591
+## 5 0.64020777  0.60233739  0.6079620
+## 6 6.13960571 -0.07069611 -1.8827221</code></pre>
+</section>
+
+<section id="recommended-diagnostics-1"
+class="title-slide slide level1">
+<h1>Recommended diagnostics</h1>
+<p>1.1. linearity of the relation between predictor and response</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat_diag, <span class="fu">aes</span>(<span class="at">x =</span> Fitted, <span class="at">y =</span> res)) <span class="sc">+</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">&#39;Fitted values&#39;</span>) <span class="sc">+</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&#39;Standardised residuals&#39;</span>) <span class="sc">+</span> </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>()</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/resid%20vs%20fitted-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="recommended-diagnostics-2"
+class="title-slide slide level1">
+<h1>Recommended diagnostics</h1>
+<p>1.2. linearity of the relation between predictor and response</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat_diag, <span class="fu">aes</span>(<span class="at">x =</span> det_Clim, <span class="at">y =</span> res)) <span class="sc">+</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">&#39;Standardized temperature&#39;</span>) <span class="sc">+</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&#39;Standardised residuals&#39;</span>) <span class="sc">+</span> </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>()</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/resid%20vs%20predictor-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="recommended-diagnostics-3"
+class="title-slide slide level1">
+<h1>Recommended diagnostics</h1>
+<ol start="2" type="1">
+<li class="fragment">normality of the residuals</li>
+</ol>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(res, <span class="at">pch =</span> <span class="dv">16</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(res, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span><span class="fl">1.3</span>)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/normality-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="recommended-diagnostics-4"
+class="title-slide slide level1">
+<h1>Recommended diagnostics</h1>
+<p><span style="font-size:70%;&quot;"> 3. homogeneity of residuals<br />
+We plot here a so-called Scale-location plot. Do you recall what it
+shows and how to interpret it?</span></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dat_diag<span class="sc">$</span>SqrtRes <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">abs</span>(dat_diag<span class="sc">$</span>Resid))  <span class="do">## calculating sqrt of absolute residuals for the Scale-Location plot</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat_diag, <span class="fu">aes</span>(<span class="at">x =</span> Fitted, <span class="at">y =</span> SqrtRes)) <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&#39;loess&#39;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="fu">expression</span>(<span class="fu">sqrt</span>(<span class="fu">abs</span>(resid)))) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">&#39;Fitted values&#39;</span>) <span class="sc">+</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/homog%20resid-1.png" width="50%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="recommended-diagnostics-5"
+class="title-slide slide level1">
+<h1>Recommended diagnostics</h1>
+<ol start="4" type="1">
+<li class="fragment">normality of the random effects</li>
+</ol>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>randE <span class="ot">&lt;-</span> <span class="fu">ranef</span>(mod)<span class="sc">$</span><span class="st">`</span><span class="at">( 1 + det_Clim | Species )</span><span class="st">`</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>randE <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(randE)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(randE<span class="sc">$</span>det_Clim, <span class="at">pch =</span> <span class="dv">16</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(randE<span class="sc">$</span>det_Clim, <span class="at">lwd =</span><span class="fl">1.3</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/randomEff%20Norm-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># histogram is not always obvious as the number of levels can be low, as in our case</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(randE<span class="sc">$</span>det_Clim, <span class="at">breaks =</span> <span class="dv">5</span>, <span class="at">border=</span><span class="cn">NA</span>, <span class="at">col =</span> <span class="st">&#39;black&#39;</span>)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/randomEff%20Norm-2.png" width="60%" style="display: block; margin: auto;" />
+This example clearly demonstrates that it is not easy to verify the
+assumption of normality of the random effects</p>
+</section>
+
+<section id="recommended-diagnostics-6"
+class="title-slide slide level1">
+<h1>Recommended diagnostics</h1>
+<p>5.1. homogeneity of residuals among levels of random factors</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat_diag, <span class="fu">aes</span>(<span class="at">x =</span> Resid, <span class="at">y =</span> Species)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/homog%20resid-per%20level-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="recommended-diagnostics-7"
+class="title-slide slide level1">
+<h1>Recommended diagnostics</h1>
+<p>5.2. homogeneity of residuals among levels of random factors</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat_diag, <span class="fu">aes</span>(<span class="at">x =</span> Fitted, <span class="at">y =</span> Resid)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(Species)) <span class="sc">+</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">&#39;blue&#39;</span>)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/homog%20resid-per%20level%20facet-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="dharma---a-package-for-model-diagnostics"
+class="title-slide slide level1">
+<h1>DHARMa - a package for model diagnostics</h1>
+<ul>
+<li class="fragment">developed by Prof. Florian Hartig from the
+University of Regensburg<br />
+</li>
+<li class="fragment">stands for “Diagnostics for HierArchical Regression
+Models”<br />
+</li>
+<li class="fragment">“In Hinduism, dharma signifies behaviours that are
+considered to be in accord with rta, the order that makes life and
+universe possible, and includes duties, rights, laws, conduct, virtues
+and ‘right way of living’”<br />
+</li>
+<li class="fragment"><p align="center" width="100%">
+<img data-src="img/FlorianHartigpic.jpeg" alt="Florian Hartig" />
+</p></li>
+</ul>
+</section>
+
+<section id="shortly-how-dharma-works" class="title-slide slide level1">
+<h1>Shortly how DHARMa works</h1>
+<ol type="1">
+<li class="fragment">Fit the model<br />
+</li>
+<li class="fragment">Simulate new response data using the fitted
+model<br />
+</li>
+<li class="fragment">For each observation, calculate the empirical
+cumulative density function (eCDF) for the simulated observations. eCDF
+describes the possible values (and their probability) at the predictor
+combination of the observed value, assuming the fitted model is
+correct.</li>
+</ol>
+</section>
+
+<section id="shortly-how-dharma-works-1"
+class="title-slide slide level1">
+<h1>Shortly how DHARMa works</h1>
+<p style="text-align:center;">
+<img src="img/DHARMA_workings.png" width="300" height = "300"/>
+</p>
+<p>The residual is defined as the value of the eCDF at the value of the
+observed data.<br />
+A residual of 0 means that all simulated values are larger than the
+observed value, and a residual of 0.5 means half of the simulated values
+are larger than the observed value.<br />
+For more info: <a
+href="https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html#motivation">DHARMa</a></p>
+</section>
+
+<section id="packages-and-models-supported-by-dharma"
+class="title-slide slide level1">
+<h1>Packages and models supported by DHARMa</h1>
+<ul>
+<li class="fragment">lm and glm<br />
+</li>
+<li class="fragment">lme4<br />
+</li>
+<li class="fragment">mgcv<br />
+</li>
+<li class="fragment">gamm4<br />
+</li>
+<li class="fragment">glmmTMB<br />
+</li>
+<li class="fragment">spaMM<br />
+</li>
+<li class="fragment">GLMMadaptive<br />
+</li>
+<li class="fragment">phyr<br />
+</li>
+<li class="fragment">brms</li>
+</ul>
+</section>
+
+<section id="what-dharma-returns" class="title-slide slide level1">
+<h1>What DHARMa returns</h1>
+<p>Let us show it directly on the model we have fitted to the data</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">simulateResiduals</span>(mod, <span class="at">plot =</span> T)  </span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/simresid%20DHA-1.png" width="60%" height="40%" style="display: block; margin: auto;" />
+<span style="font-size:80%;&quot;">The option <code>plot = TRUE</code>
+directly produces the plot, disable it with <code>= F</code>.</span></p>
+</section>
+
+<section id="interpreting-dharma-output"
+class="title-slide slide level1">
+<h1>Interpreting DHARMa output</h1>
+<p>The minimum/maximum values for the residuals are 0 and 1.<br />
+For a correctly specified model we expect:</p>
+<ul>
+<li class="fragment"><p>a uniform (flat) distribution of the scaled
+residuals<br />
+</p></li>
+<li class="fragment"><p>uniformity in y direction if we plot against any
+predictor.</p></li>
+<li class="fragment"><p><span style="color:blue">Important: uniform
+distribution is the only difference to the classically expected normal
+distribution of the residuals (because of the way the residuals are
+obtained here).</span></p></li>
+</ul>
+</section>
+
+<section id="inspecting-the-output-qq-plot"
+class="title-slide slide level1">
+<h1>Inspecting the output: QQ-plot</h1>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plotQQunif</span>(sim)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/outSim%20QQplot-1.png" width="40%" style="display: block; margin: auto;" /></p>
+<p><span style="font-size:60%;&quot;"> QQ plot is used to detect overall
+deviations from the expected distribution (uniform). By default the
+function <code>plotQQunif()</code> also adds tests of the distributional
+assumption (KS test), dispersion and outliers. Note: outliers in DHARMa
+are values that are outside the simulation envelope, not in terms of a
+particular quantile. So, the number of the outliers will depend on the
+number of simulations. If outliers in terms of a particular quantile are
+desired, they can be requested with the function
+<code>outliers()</code>. </span></p>
+</section>
+
+<section id="test-of-distributional-assumptions"
+class="title-slide slide level1">
+<h1>Test of distributional assumptions</h1>
+<ul>
+<li class="fragment"><code>testUniformity()</code> performs
+Kolmogorov-Smirnov test on whether the residuals are uniformly
+distributed.</li>
+</ul>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testUniformity</span>(sim, <span class="at">plot =</span> F)</span></code></pre></div>
+<pre><code>## 
+##  Asymptotic one-sample Kolmogorov-Smirnov test
+## 
+## data:  simulationOutput$scaledResiduals
+## D = 0.037333, p-value = 0.2467
+## alternative hypothesis: two-sided</code></pre>
+</section>
+
+<section id="test-of-outliers" class="title-slide slide level1">
+<h1>Test of outliers</h1>
+<p><span style="font-size:70%;&quot;"> - <code>testOutliers()</code>
+tests if the number of outliers outside of the simulation envelope is
+larger or smaller than expected (uses bootstrap or can rely on binomial
+test, specified with the option <code>type=</code>)</span></p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testOutliers</span>(sim)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/testsOutl-1.png" width="30%" style="display: block; margin: auto;" /></p>
+<pre><code>## 
+##  DHARMa outlier test based on exact binomial test with approximate
+##  expectations
+## 
+## data:  sim
+## outliers at both margin(s) = 3, observations = 750, p-value = 0.3017
+## alternative hypothesis: true probability of success is not equal to 0.007968127
+## 95 percent confidence interval:
+##  0.000825657 0.011644828
+## sample estimates:
+## frequency of outliers (expected: 0.00796812749003984 ) 
+##                                                  0.004</code></pre>
+</section>
+
+<section id="test-of-dispersion" class="title-slide slide level1">
+<h1>Test of dispersion</h1>
+<p><span style="font-size:80%;line-height:-0.4px;&quot;"> -
+<code>testDispersion()</code> provides several ways to test for over- or
+underdispersion. In short: by default the simulation-based dispersion
+test is used that compares the variance of observed raw residuals with
+the one of the simulated residuals. A sinificant ratio &gt;1 indicates
+overdispersion, a signif. ratio &lt; 1 - underdispersion.</span></p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testDispersion</span>(sim, <span class="at">plot =</span> F)</span></code></pre></div>
+<pre><code>## 
+##  DHARMa nonparametric dispersion test via sd of residuals fitted vs.
+##  simulated
+## 
+## data:  simulationOutput
+## dispersion = 1.0046, p-value = 0.752
+## alternative hypothesis: two.sided</code></pre>
+</section>
+
+<section id="inspecting-the-output-part2"
+class="title-slide slide level1">
+<h1>Inspecting the output: Part2</h1>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plotResiduals</span>(sim)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/ResvsPred-1.png" width="50%" style="display: block; margin: auto;" />
+<span style="font-size:80%;&quot;">A plot of the residuals against the
+predicted value (or another variable). Simulation outliers are
+highlighted as red stars. To detect deviations from uniformity in
+y-direction, the function calculates a quantile regression that compares
+the empirical 0.25, 0.5 and 0.75 quantiles in y direction (red solid
+lines) with the respective theoretical quantiles (dashed black/red
+lines) </span></p>
+</section>
+
+<section id="test-of-quantiles" class="title-slide slide level1">
+<h1>Test of quantiles</h1>
+<p><code>testQuantiles()</code> fits a quantile regression of residuals
+vs predicted value (this is default, a chosen predictor can be
+specified), and tests if this conforms to the expected quantile</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testQuantiles</span>(sim, <span class="at">plot =</span> F)</span></code></pre></div>
+<pre><code>## 
+##  Test for location of quantiles via qgam
+## 
+## data:  sim
+## p-value &lt; 2.2e-16
+## alternative hypothesis: both</code></pre>
+</section>
+
+<section id="plot-residuals-vs-predictor"
+class="title-slide slide level1">
+<h1>Plot residuals vs predictor</h1>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plotResiduals</span>(sim, <span class="at">form =</span> dat_fac<span class="sc">$</span>det_Clim)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/ResvsPred-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="test-of-temporal-autocorrelation"
+class="title-slide slide level1">
+<h1>Test of temporal autocorrelation</h1>
+<p>We first need to extract a single study because there are multiple
+species and their studies go over different time periods and somewhat
+different durations (as we have seen before).<br />
+Let us get the data for the study 1 and recalculate the residuals only
+for this data subset.</p>
+</section>
+
+<section id="temporal-autocorrelation-study-1"
+class="title-slide slide level1">
+<h1>Temporal autocorrelation: study 1</h1>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>sim_1 <span class="ot">&lt;-</span> <span class="fu">recalculateResiduals</span>(sim, <span class="at">sel =</span> dat_fac<span class="sc">$</span>ID <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">testTemporalAutocorrelation</span>(sim_1, <span class="at">time =</span> dat_fac<span class="sc">$</span>Year[dat_fac<span class="sc">$</span>ID <span class="sc">==</span> <span class="dv">1</span>])</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/testAutocor-1.png" width="50%" style="display: block; margin: auto;" /></p>
+<pre><code>## 
+##  Durbin-Watson test
+## 
+## data:  simulationOutput$scaledResiduals ~ 1
+## DW = 1.997, p-value = 0.9912
+## alternative hypothesis: true autocorrelation is not 0</code></pre>
+</section>
+
+<section id="function-to-test-autocorrelation-per-study"
+class="title-slide slide level1">
+<h1>Function to test autocorrelation per study</h1>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(dat_fac<span class="sc">$</span>ID)</span></code></pre></div>
+<pre><code>##  [1] &quot;1&quot;   &quot;21&quot;  &quot;22&quot;  &quot;98&quot;  &quot;101&quot; &quot;121&quot; &quot;131&quot; &quot;159&quot; &quot;164&quot; &quot;167&quot; &quot;185&quot; &quot;186&quot;
+## [13] &quot;327&quot; &quot;333&quot; &quot;436&quot; &quot;437&quot; &quot;455&quot; &quot;459&quot; &quot;474&quot; &quot;487&quot; &quot;494&quot; &quot;495&quot; &quot;504&quot; &quot;509&quot;
+## [25] &quot;571&quot;</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># a little function to perform the temp autocor test per study</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>fun_autocor <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">simulatedObj =</span> sim, <span class="at">data =</span> dat_fac, <span class="at">ID =</span> <span class="dv">1</span>){</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>sim_subset <span class="ot">&lt;-</span> <span class="fu">recalculateResiduals</span>(simulatedObj, <span class="at">sel =</span> data<span class="sc">$</span>ID <span class="sc">==</span> ID)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>testAut <span class="ot">&lt;-</span> <span class="fu">testTemporalAutocorrelation</span>(sim_subset, <span class="at">time =</span> data<span class="sc">$</span>Year[data<span class="sc">$</span>ID <span class="sc">==</span> ID], <span class="at">plot =</span> F)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="fu">return</span>(<span class="fu">list</span>(testAut, <span class="fu">data.frame</span>(<span class="at">DurbW =</span> testAut<span class="sc">$</span>statistic, <span class="at">p =</span> testAut<span class="sc">$</span>p.value, <span class="at">ID =</span> ID)))  </span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</section>
+
+<section id="check-how-function-works" class="title-slide slide level1">
+<h1>Check how function works</h1>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fun_autocor</span>(sim, dat_fac, <span class="at">ID =</span> <span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## [[1]]
+## 
+##  Durbin-Watson test
+## 
+## data:  simulationOutput$scaledResiduals ~ 1
+## DW = 1.997, p-value = 0.9912
+## alternative hypothesis: true autocorrelation is not 0
+## 
+## 
+## [[2]]
+##      DurbW         p ID
+## DW 1.99701 0.9911881  1</code></pre>
+</section>
+
+<section id="test-autocorrelation-in-all-studies"
+class="title-slide slide level1">
+<h1>Test autocorrelation in all studies</h1>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(dat_autoc<span class="sc">$</span>p, <span class="at">breaks =</span> <span class="dv">20</span>)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/testDisplayAutocor%20All%20Stud-1.png" width="40%" style="display: block; margin: auto;" /></p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>dat_autoc<span class="sc">$</span>sign <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(dat_autoc<span class="sc">$</span>p <span class="sc">&lt;</span> <span class="fl">0.05</span>,<span class="st">&#39;Yes&#39;</span>,<span class="st">&#39;No&#39;</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(dat_autoc<span class="sc">$</span>sign <span class="sc">==</span> <span class="st">&#39;Yes&#39;</span>)</span></code></pre></div>
+<pre><code>## [1] 8</code></pre>
+</section>
+
+<section id="detected-issues" class="title-slide slide level1">
+<h1>Detected issues</h1>
+<p>We detected temporal autocorrelation in 8 out of 25 studies. An
+indication that it may be causing problems.<br />
+Other potential issues?<br />
+We will see how to deal with these more advanced topics in the next
+lecture.</p>
+</section>
+
+<section id="model-inference" class="title-slide slide level1">
+<h1>Model inference</h1>
+<p><strong>Inference</strong>: evaluating the strength of evidence in
+data for some statement about nature.<br />
+<strong>Main method</strong>: hypothesis testing. So, prior to fitting
+the model (and data collection) we formulate hypotheses (usually null
+and alternative one) about some phenomenon in nature.<br />
+Inference is thus about <span class="math inline">\(\beta\)</span>,
+i.e. model parameters. We usually want to assess whether a specific
+predictor affects our response variable.</p>
+<ul>
+<li class="fragment"><span style="color:orange"> Could you please
+formulate a hypothesis (regarding your own research or just examplary
+one)? </span></li>
+</ul>
+</section>
+
+<section id="what-is-ml-and-reml" class="title-slide slide level1">
+<h1>What is ML and REML?</h1>
+<ul>
+<li class="fragment">ML stands for maximum likelihoood. Specifically,
+maximum likelihood estimation of model parameters.<br />
+</li>
+<li class="fragment"><span style="color:&quot;orange&quot;;&quot;"> What
+are model parameters?</span><br />
+</li>
+<li class="fragment">ML estimation is a method that allows to estimate
+values of model parameters. The parameter values are found so that they
+maximise the likelihood that the model we specified produced the
+observed data.</li>
+</ul>
+</section>
+
+<section id="formal-definition-of-ml" class="title-slide slide level1">
+<h1>Formal definition of ML</h1>
+<p>The likelihood of the model given the data is equal to the
+probability density assumed for those data given those parameter values:
+<span class="math display">\[{\mathcal {L}}(\theta \mid x) = P(x \mid
+\theta)\]</span></p>
+<p>where <span class="math inline">\(\theta\)</span> are is our model
+(the parameters we aim to estimate), and <span
+class="math inline">\(x\)</span> are the data points.</p>
+</section>
+
+<section id="the-logic-behind-it-in-veeeery-simplified-terms"
+class="title-slide slide level1">
+<h1>The logic behind it in veeeery simplified terms</h1>
+<p>We simulate the data using a linear model, assuming that phenology is
+advancing with temperature (we look at one species only, which we
+monitored during 50 years)</p>
+</section>
+
+<section id="our-simulated-data" class="title-slide slide level1">
+<h1>Our simulated data</h1>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">5</span>)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>Weight_sim <span class="ot">&lt;-</span> <span class="fu">SimulateLin</span>(<span class="at">intercept =</span> <span class="fl">0.1</span>, <span class="at">slope =</span> <span class="sc">-</span><span class="fl">0.4</span>, <span class="at">n =</span> <span class="dv">50</span>, </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">var.error =</span> <span class="fl">0.2</span>)</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x, <span class="at">data =</span> Weight_sim, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">xlab =</span> <span class="st">&quot;Temperature&quot;</span>, </span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Phenology&quot;</span>)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/check%20simu%20data-1.png" width="50%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="fit-linear-model-to-simulated-data"
+class="title-slide slide level1">
+<h1>Fit linear model to simulated data</h1>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x, <span class="at">data =</span> Weight_sim)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = y ~ x, data = Weight_sim)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.91233 -0.19415 -0.02061  0.22722  1.11235 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.09660    0.05167   1.869   0.0677 .  
+## x           -0.37953    0.02438 -15.570   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.3647 on 48 degrees of freedom
+## Multiple R-squared:  0.8347, Adjusted R-squared:  0.8313 
+## F-statistic: 242.4 on 1 and 48 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>Weight_sim<span class="sc">$</span>pred <span class="ot">&lt;-</span> <span class="fu">fitted</span>(mod)</span></code></pre></div>
+</section>
+
+<section id="plot-model-fit" class="title-slide slide level1">
+<h1>Plot model fit</h1>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x, <span class="at">data =</span> Weight_sim, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">xlab =</span> <span class="st">&quot;Temperature&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;Phenology&quot;</span>)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(<span class="at">x=</span> Weight_sim<span class="sc">$</span>x, <span class="at">y =</span> <span class="fu">fitted</span>(mod), <span class="at">col =</span> <span class="st">&quot;red&quot;</span>, <span class="at">lwd =</span> <span class="dv">2</span>)  <span class="co"># add the fitted line to the plot</span></span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/plot%20fitted%20mod-1.png" width="50%" style="display: block; margin: auto;" /></p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>sigma2_res <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">resid</span>(mod)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="fu">nrow</span>(Weight_sim)  <span class="co"># our variance</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(mod)<span class="sc">/</span><span class="fu">nrow</span>(Weight_sim)  <span class="co"># for lm variance is the same as the deviance</span></span></code></pre></div>
+<pre><code>## [1] 0.1276826</code></pre>
+</section>
+
+<section id="now-we-assume-linear-model-and-generate-data-under-it"
+class="title-slide slide level1">
+<h1>Now we assume linear model and generate data under it</h1>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>determ_comp <span class="ot">&lt;-</span> <span class="cf">function</span>(xvalues, intercept, slope){</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  yvalues <span class="ot">&lt;-</span> intercept <span class="sc">+</span> slope<span class="sc">*</span>xvalues</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(yvalues)</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>DataGener_lm <span class="ot">&lt;-</span> <span class="cf">function</span>(xvalues,params){</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  y_det <span class="ot">&lt;-</span> <span class="fu">determ_comp</span>(xvalues, params<span class="sc">$</span>intercept, params<span class="sc">$</span>slope)  <span class="co"># get deterministic signal part</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  yvalues <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="fu">length</span>(y_det), y_det, <span class="fu">sqrt</span>(params<span class="sc">$</span>variance))     <span class="co"># add random nomrally distributed noise</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(yvalues)</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</section>
+
+<section id="generate-data-under-the-model"
+class="title-slide slide level1">
+<h1>Generate data under the model</h1>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>xvalues <span class="ot">&lt;-</span> Weight_sim<span class="sc">$</span>x    <span class="co"># xvalues come from our observed data</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>params <span class="ot">&lt;-</span> <span class="fu">list</span>()  </span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>params<span class="sc">$</span>intercept <span class="ot">&lt;-</span> <span class="dv">1</span>            <span class="co"># set model parameters by eyeballing  the plot of the observed data</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>params<span class="sc">$</span>slope <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.5</span> </span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>params<span class="sc">$</span>variance <span class="ot">&lt;-</span> <span class="fl">0.3</span>  </span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>yvals <span class="ot">&lt;-</span> <span class="fu">DataGener_lm</span>(xvalues, params)</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(yvals <span class="sc">~</span> xvalues) </span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/generData-1.png" width="50%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="generate-plausible-data-under-this-model"
+class="title-slide slide level1">
+<h1>Generate plausible data under this model</h1>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>PlotPossibleData <span class="ot">&lt;-</span> <span class="cf">function</span>(xvalues, params, <span class="at">reps =</span> <span class="dv">100</span>){ </span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  samplesize <span class="ot">&lt;-</span> <span class="fu">length</span>(xvalues)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="dv">0</span>, <span class="at">dim =</span> <span class="fu">c</span>(samplesize,reps))   <span class="co"># storage array for results</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>reps){</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    yvalues <span class="ot">&lt;-</span> <span class="fu">DataGener_lm</span>(xvalues, params)</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>    res[,i] <span class="ot">&lt;-</span> yvalues</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>      <span class="co"># boxplot of the results</span></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">boxplot</span>(<span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(res), <span class="cf">function</span>(i) res[i,]), <span class="at">at =</span> xvalues, <span class="at">xaxt =</span> <span class="st">&quot;n&quot;</span>, <span class="at">main =</span> <span class="st">&quot;Plausible data under this model&quot;</span>, </span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>          <span class="at">ylab =</span> <span class="st">&quot;Weight&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Phenology&quot;</span>, <span class="at">boxwex =</span> <span class="fl">0.2</span>)  <span class="do">## boxwex option just makes the boxes narrower so that they are visible on x axis</span></span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>  cleanseq <span class="ot">&lt;-</span> (<span class="fu">seq</span>(<span class="dv">0</span>, <span class="fu">max</span>(<span class="fu">round</span>(xvalues<span class="sc">/</span><span class="dv">100</span>)), <span class="at">length=</span>(<span class="fu">max</span>(<span class="fu">round</span>(xvalues<span class="sc">/</span><span class="dv">100</span>)))<span class="sc">+</span><span class="dv">1</span>))<span class="sc">*</span><span class="dv">100</span></span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axis</span>(<span class="dv">1</span>, <span class="at">at =</span> cleanseq, <span class="at">labels =</span> cleanseq)    <span class="co"># label the x axis properly</span></span>
+<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</section>
+
+<section id="plot-generated-plausible-data"
+class="title-slide slide level1">
+<h1>Plot generated plausible data</h1>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">PlotPossibleData</span>(xvalues, params, <span class="at">reps =</span> <span class="dv">100</span>)    <span class="co"># run the function to visualize the range of data that could be produced under this model</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="co"># add the real data</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(xvalues, Weight_sim<span class="sc">$</span>y, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex=</span><span class="dv">1</span>, <span class="at">col =</span> <span class="st">&quot;blue&quot;</span>)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/Plot%20DataUnderMod-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="try-again" class="title-slide slide level1">
+<h1>Try again</h1>
+<p>Choosing a new set of parameters</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>params<span class="sc">$</span>intercept <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>params<span class="sc">$</span>slope <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.5</span> </span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>params<span class="sc">$</span>variance <span class="ot">&lt;-</span> <span class="fl">0.3</span>  </span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="fu">PlotPossibleData</span>(xvalues, params, <span class="at">reps =</span> <span class="dv">100</span>)    <span class="co">#  visualize the range of data plausible under this model</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(xvalues, Weight_sim<span class="sc">$</span>y, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex=</span><span class="dv">1</span>, <span class="at">col =</span> <span class="st">&quot;blue&quot;</span>)</span></code></pre></div>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/newsim-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="more-formally" class="title-slide slide level1">
+<h1>More formally</h1>
+<p>So, we work to find the parameters <span
+class="math inline">\(\theta\)</span> that minimize the residuals (in
+case of Ordinary Least Square approach for linear models) or maximize
+the data likelihood under this model.<br />
+Specifically, we calculate the probability density for each data point
+under chosen parameter set.</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>Weight_sim<span class="sc">$</span>density <span class="ot">&lt;-</span> <span class="fu">dnorm</span>(<span class="at">x =</span> Weight_sim<span class="sc">$</span>x, <span class="at">mean =</span> <span class="fu">fitted</span>(mod), <span class="at">sd =</span> <span class="fu">sqrt</span>(sigma2_res))</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="co"># for simplicity let us look at one data point only now</span></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>oneObs <span class="ot">&lt;-</span> Weight_sim[<span class="dv">1</span>, ]</span></code></pre></div>
+</section>
+
+<section id="probability-density-for-one-observation"
+class="title-slide slide level1">
+<h1>Probability density for one observation</h1>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/Like%20plot-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<pre><code>## [1] 0.1709749</code></pre>
+</section>
+
+<section id="model-likelihood" class="title-slide slide level1">
+<h1>Model likelihood</h1>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">logLik</span>(mod)[<span class="dv">1</span>]</span></code></pre></div>
+<pre><code>## [1] -19.49173</code></pre>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">log</span>(<span class="fu">prod</span>(Weight_sim<span class="sc">$</span>density))</span></code></pre></div>
+<pre><code>## [1] -Inf</code></pre>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">log</span>(Weight_sim<span class="sc">$</span>density))  </span></code></pre></div>
+<pre><code>## [1] -1664.037</code></pre>
+<ul>
+<li class="fragment"><span style="color:orange"> Why are we getting -Inf
+with log(prod)? </span><br />
+</li>
+<li class="fragment">Recall we just used eye-balled parameters, we did
+not really work towards maximizing the likelihood</li>
+</ul>
+</section>
+
+<section id="restricted-maximum-likelihood"
+class="title-slide slide level1">
+<h1>Restricted Maximum Likelihood</h1>
+<ul>
+<li class="fragment">ML results in a bias of the variance
+estimates.<br />
+</li>
+<li class="fragment">I will spare you the math.<br />
+</li>
+<li class="fragment">REML applies a special matrix multiplication so
+that <span class="math inline">\(\beta\)</span> (slope and intercept) do
+not have to be considered anymore. As a result, it returns an unbiased
+estimate of variance.<br />
+</li>
+<li class="fragment">Thus: REML estimates of <span
+class="math inline">\(\beta\)</span> are not the same as those obtained
+with ML, especially if there are many covariates in the model.</li>
+</ul>
+</section>
+
+<section id="reml-vs-ml" class="title-slide slide level1">
+<h1>REML vs ML</h1>
+<ul>
+<li class="fragment">ML produces unbiased estimates of the <span
+class="math inline">\(\beta\)</span> and thus should be used if we focus
+on the estimates of the fixed effects.<br />
+</li>
+<li class="fragment">REML produces unbiased estimates of variances and
+thus should be used if we focus on estimating random structure. For
+example, if we are interested in the variance among the levels of the
+random factor or want to compare the models with different random
+structures.<br />
+</li>
+<li class="fragment"><span style="color:blue">To remember: “RE” in REML
+can be thought of as “Random Effects”</span></li>
+</ul>
+</section>
+
+<section id="likelihood-ratio-test" class="title-slide slide level1">
+<h1>Likelihood Ratio Test</h1>
+<p>Assesses the goodness of fit of two competing models using the ratio
+of their likelihoods.<br />
+Likelihood ratio is calculated as follows: <span
+class="math display">\[\dfrac{\mathcal {L}_r}{\mathcal {L}}\]</span>
+Where <span class="math inline">\({\mathcal {L}}\)</span> is the maximum
+likelihood of the full fitted model and <span
+class="math inline">\({\mathcal {L}_r}\)</span> is the maximum
+likelihood of the reduced model.</p>
+</section>
+
+<section id="likelihood-ratio-test-1" class="title-slide slide level1">
+<h1>Likelihood Ratio test</h1>
+<p>We use <code>ln()</code> of this ratio, specifically <span
+class="math inline">\(-2 \times ln(\dfrac{\mathcal {L}_r}{\mathcal
+{L}})\)</span></p>
+<p>This metric is also known as ‘deviance’. It is approximately <span
+class="math inline">\(\chi^2\)</span> distributed with <code>r</code>
+degrees of freedom, where <code>r</code> is the number of parameters by
+which we reduced the full model.</p>
+</section>
+
+<section id="chi-squared-distribution" class="title-slide slide level1">
+<h1>Chi-squared distribution</h1>
+<p>By using the fact that log-likelihood is distributed according to
+<span class="math inline">\(\chi^2\)</span> we can estimate the
+statistical significance of any difference in log-likelihood between the
+full and the reduced models.</p>
+</section>
+
+<section id="chi-squared-distribution-example"
+class="title-slide slide level1">
+<h1>Chi-squared distribution: example</h1>
+<p>A visualization of the chi-squared distribution with 1 df, the
+Chi-squared for examplary two models is in red). Given the null
+hypothesis is true there is a 0.0269955 percent chance to obtain a
+deviance with that value. So we will reject the null hypothesis (under
+<span class="math inline">\(\alpha\)</span> of 0.05).
+<img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/Chi2-1.png" width="50%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="checking-up" class="title-slide slide level1">
+<h1>Checking up</h1>
+<p><span style="color:orange;"> - Why are we using log-Likelihood and
+not Likelihood itself?<br />
+- What is model inference?</span></p>
+</section>
+
+<section id="questions" class="title-slide slide level1">
+<h1>Questions?</h1>
+
+</section>
+
+<section id="literature" class="title-slide slide level1">
+<h1>Literature</h1>
+<span style = "font-size: 80%;">
+<ul style='text-align: left;'>
+<ul>
+<li class="fragment">Zuur AF, Ieno EN, Walker N, Saveliev AA, Smith GM
+(2009) Mixed-Effects Models and Extensions in Ecology with R. New York,
+Springer New York: XXII, 574 p.<br />
+</li>
+<li class="fragment">Schielzeth H, Dingemanse NJ, Nakagawa S, Westneat
+DF, Allegue H, Teplitsky C, Reale D, Dochtermann NA, Garamszegi LZ,
+Araya-Ajoy YG (2020) Robustness of linear mixed-effects models to
+violations of distributional assumptions. <em>Methods in Ecology and
+Evolution</em>, 11:1141–1152.<br />
+</li>
+<li class="fragment">Bolker BM, Brooks ME, Clark CJ, Geange SW, Poulsen
+JR, Stevens MHH, White J-SS (2008) Generalized linear mixed models: a
+practical guide for ecology and evolution. <em>Trends in Ecology and
+Evolution</em>, 24:3.<br />
+</li>
+<li class="fragment">Grilli L and Rampichini C (2014) Specification of
+random effects in multilevel models: a review. <em>Quality and
+Quality</em>, DOI: 10.1007/s11135-014-0060-5.<br />
+</li>
+<li class="fragment">Tredennik AT, Hooker G, Ellner SP, Adler PB (2021)
+A practical guide to selecting models for exploration, inference, and
+prediction in ecology. <em>Ecology</em>, 0:e03336.</span>
+</ul></li>
+</ul>
+</section>
+    </div>
+  </div>
+
+  <script src="03a_Lecture_ModDiagnInf_files/reveal.js-3.3.0.1/lib/js/head.min.js"></script>
+  <script src="03a_Lecture_ModDiagnInf_files/reveal.js-3.3.0.1/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: true,
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        slideNumber: true,
+        // Push each slide change to the browser history
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: false,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Opens links in an iframe preview overlay
+        previewLinks: true,
+        // Transition style
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+
+
+        // Optional reveal.js plugins
+        dependencies: [
+        ]
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>
