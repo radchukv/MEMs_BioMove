@@ -331,7 +331,7 @@ return(list(testAut, data.frame(DurbW = testAut$statistic, p = testAut$p.value, 
 
 ```{r use fun testAutocor, echo = TRUE, fig.align='center', out.width= '60%'}
 
-fun_autocor(sim, dat_fac, ID = 1)
+fun_autocor(sim, dat_fac, ID = 21)
 
 ```
 
@@ -556,6 +556,17 @@ abline(v = 4, col = 'red')
 <span style = "color:orange;">
 - Why are we using log-Likelihood and not Likelihood itself?       
 - What is model inference?</span>
+
+# Work flow 
+- Formulate research question    
+- Formulate hypothesis    
+- Collect data   
+- Fit appropriate model    
+- Conduct model diagnostics   
+- Inference (i.e. answer research question)   
+- If desired, plot predictions
+
+
 
 # Questions?
 

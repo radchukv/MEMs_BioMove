@@ -1041,19 +1041,19 @@ class="title-slide slide level1">
 
 <section id="check-how-function-works" class="title-slide slide level1">
 <h1>Check how function works</h1>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fun_autocor</span>(sim, dat_fac, <span class="at">ID =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fun_autocor</span>(sim, dat_fac, <span class="at">ID =</span> <span class="dv">21</span>)</span></code></pre></div>
 <pre><code>## [[1]]
 ## 
 ##  Durbin-Watson test
 ## 
 ## data:  simulationOutput$scaledResiduals ~ 1
-## DW = 1.997, p-value = 0.9912
+## DW = 1.511, p-value = 0.04778
 ## alternative hypothesis: true autocorrelation is not 0
 ## 
 ## 
 ## [[2]]
-##      DurbW         p ID
-## DW 1.99701 0.9911881  1</code></pre>
+##       DurbW          p ID
+## DW 1.510992 0.04777999 21</code></pre>
 </section>
 
 <section id="test-autocorrelation-in-all-studies"
@@ -1362,6 +1362,25 @@ deviance with that value. So we will reject the null hypothesis (under
 <p><span style="color:orange;"> - Why are we using log-Likelihood and
 not Likelihood itself?<br />
 - What is model inference?</span></p>
+</section>
+
+<section id="work-flow" class="title-slide slide level1">
+<h1>Work flow</h1>
+<ul>
+<li class="fragment">Formulate research question<br />
+</li>
+<li class="fragment">Formulate hypothesis<br />
+</li>
+<li class="fragment">Collect data<br />
+</li>
+<li class="fragment">Fit appropriate model<br />
+</li>
+<li class="fragment">Conduct model diagnostics<br />
+</li>
+<li class="fragment">Inference (i.e. answer research question)<br />
+</li>
+<li class="fragment">If desired, plot predictions</li>
+</ul>
 </section>
 
 <section id="questions" class="title-slide slide level1">
