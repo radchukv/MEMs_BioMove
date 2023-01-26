@@ -401,7 +401,7 @@ randEF <- as.data.frame(ranef(mod_randi)) %>%
   rename(group = grp)
 ggplot(data = new.dat, aes(x = x, y = pred_ranE, group = group, col = group)) +
   geom_line(lty = 3, linewidth = 2) + theme_bw() +
-  geom_line(data = new.dat, aes(x = x, y = pred_fix), col = 'black') + 
+  geom_hline(yintercept = 0, col = 'black') + 
   geom_point(data = randEF, aes(x = 0, y = condval, col = group), pch = 20, size = 7) +
   xlab('Standardized temperature') + ylab('Standardized phenology')
 ```
