@@ -100,6 +100,10 @@ ggplot(data = new_full, aes(x = det_Clim, y = pred_fix, group = Species)) +
 mod_randSlope <- lmer(Trait_mean ~ det_Clim + (1 + det_Clim|Species), data = dat_fac, REML = FALSE)
 summary(mod_randSlope)
 
+# a model with random slope only - as discussed in the lecture 
+mod_randSlOnly <- lmer(Trait_mean ~ det_Clim + (0 + det_Clim|Species), data = dat_fac, REML = FALSE)
+summary(mod_randSlOnly)
+
 mod_randSl_spam <- fitme(Trait_mean ~ det_Clim + (1 + det_Clim|Species), data = dat_fac, method = 'ML')
 summary(mod_randSl_spam)
 ```
