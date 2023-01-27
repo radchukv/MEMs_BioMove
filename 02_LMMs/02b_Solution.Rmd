@@ -1,0 +1,148 @@
+---
+title: "Solution for the exercise on mixed-effect models"
+author: "Radchuk Viktoriia"
+date: "2022-1-2"
+output:
+  html_document:
+    theme: default
+       
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+library(lme4)
+library(spaMM)
+library(merTools)
+```
+
+# Read in the data
+
+```{r read-data, echo = TRUE}
+dat <- read.csv(file = here::here('data', 'dat_phen_temp_subs.csv'))
+str(dat)
+```
+
+
+# Data preparation
+```{r data prep, echo = TRUE, fig.align='center'}
+dat_fac <- dat %>%
+  mutate_if(is.character, as.factor) %>% 
+  mutate(ID = as.factor(ID))
+str(dat_fac)
+
+```
+
+# Relation between temperature and phenology per species
+
+```{r relation per species, echo = TRUE, out.width= '100%', fig.align='center'}
+ggplot(dat_fac, aes(x = det_Clim, y = Trait_mean)) +
+  geom_point() + theme_bw() + 
+  facet_wrap(vars(ID)) +
+  xlab('Standardized temperature') +
+  ylab('Standardized phenology')
+
+```
+
+# Fit mixed effects model with random intercept using `lme4`
+```{r mod-randInt, echo= TRUE}
+mod_randInt <- lmer(Trait_mean ~ det_Clim + (1|Species), data = dat_fac, REML = FALSE)
+summary(mod_randInt)
+
+mod_randInt_spam <- fitme(Trait_mean ~ det_Clim + (1|Species), data = dat_fac, method = 'ML')
+summary(mod_randInt_spam)
+```
+Pay attention: singularity! What does it mean?
+
+
+# Predictions with the fitted model
+```{r Pred randInterc, echo = TRUE, out.width = '100%', fig.align='center'}
+
+new <- expand.grid('Species' = unique(dat_fac$Species), 
+                       det_Clim = seq(from = min(dat_fac$det_Clim), to = 
+                                    max(dat_fac$det_Clim), length.out = 25))
+
+head(new)
+
+new$pred_fix <- predict(mod_randInt, newdata = new, re.form = NA)
+new$pred <- predict(mod_randInt, newdata = new) ## by default re.form = NULL, i.e. including all random effects
+ggplot(data = new, aes(x = det_Clim, y = pred, group = Species, col = Species)) +
+  geom_line(lty = 3) + theme_bw() +
+  geom_line(data = new, aes(x = det_Clim, y = pred_fix), col = 'black') +
+  xlab('Standardized temperature') + ylab('Standardized phenology')
+```
+
+
+# Add 95%CI ot the plotted fit
+We use the `predictInterval()` function from the `merTools` package to predict the CI around each predicted value.   
+```{r Pred randInterc CI, echo = TRUE, out.width = '100%', fig.align='center'}
+
+CI_pred <- predictInterval(mod_randInt, new, level = 0.95)
+CI_pred_fix <- predictInterval(mod_randInt, new, level = 0.95, which = 'fixed', include.resid.var = FALSE)
+CI_pred_fix <- CI_pred_fix %>% 
+  rename(upr_Fix = upr, lwr_Fix = lwr) %>% 
+  dplyr::select(., !fit)
+
+## important: we here first plot the intervals (using geom_ribbon()) for all species, and only then the line (otherwise it iwll be overplotted and not visible)
+new_full <- cbind(new, CI_pred, CI_pred_fix)
+ggplot(data = new_full, aes(x = det_Clim, y = pred_fix, group = Species)) +
+  geom_ribbon(data = new_full, aes(x = det_Clim, ymin = lwr, ymax = upr), fill = 'grey', alpha = 0.3) +
+  geom_ribbon(data = new_full, aes(x = det_Clim, ymin = lwr_Fix, ymax = upr_Fix), fill = 'blue',  alpha = 0.3) +
+  geom_line(lty = 3) + theme_bw() +
+  xlab('Standardized temperature') + ylab('Standardized phenology')
+```
+
+
+# Fit mixed-effects model with random slope using `lme4`
+```{r mod-randSlope, echo= TRUE}
+mod_randSlope <- lmer(Trait_mean ~ det_Clim + (1 + det_Clim|Species), data = dat_fac, REML = FALSE)
+summary(mod_randSlope)
+
+mod_randSl_spam <- fitme(Trait_mean ~ det_Clim + (1 + det_Clim|Species), data = dat_fac, method = 'ML')
+summary(mod_randSl_spam)
+```
+Again: singularity when using `lme4`!   Would we use these models to make any predictions?? 
+
+
+# Predictions with the fitted random-slope model
+```{r Pred randSl, echo = TRUE, out.width = '100%', fig.align='center'}
+
+newSlope <- expand.grid('Species' = unique(dat_fac$Species), 
+                       det_Clim = seq(from = min(dat_fac$det_Clim), to = 
+                                    max(dat_fac$det_Clim), length.out = 25))
+
+head(newSlope)
+
+newSlope$pred_fix <- predict(mod_randSlope, newdata = newSlope, re.form = NA)
+newSlope$pred <- predict(mod_randSlope, newdata = newSlope) ## by default re.form = NULL, i.e. including all random effects
+ggplot(data = newSlope, aes(x = det_Clim, y = pred, group = Species, col = Species)) +
+  geom_line(lty = 3) + theme_bw() +
+  geom_line(data = newSlope, aes(x = det_Clim, y = pred_fix), col = 'black') +
+  xlab('Standardized temperature') + ylab('Standardized phenology')
+```
+
+
+# Add 95%CI ot the plotted fit
+We use the `predictInterval()` function from the `merTools` package to predict the CI around each predicted value.   
+```{r Pred randSlope CI, echo = TRUE, out.width = '100%', fig.align='center'}
+
+CI_pred <- predictInterval(mod_randSlope, newSlope, level = 0.95)  ## note warnings!!!!
+CI_pred_fix <- predictInterval(mod_randSlope, newSlope, level = 0.95, which = 'fixed', include.resid.var = FALSE)  ## note warnings!
+CI_pred_fix <- CI_pred_fix %>% 
+  rename(upr_Fix = upr, lwr_Fix = lwr) %>% 
+  dplyr::select(., !fit)
+
+## important: we here first plot the intervals (using geom_ribbon()) for all species, and only then the line (otherwise it will be overplotted and not visible)
+newSlope <- cbind(newSlope, CI_pred, CI_pred_fix)
+ggplot(data = newSlope, aes(x = det_Clim, y = pred_fix, group = Species)) +
+  geom_ribbon(data = newSlope, aes(x = det_Clim, ymin = lwr, ymax = upr), fill = 'grey', alpha = 0.3) +
+  geom_ribbon(data = newSlope, aes(x = det_Clim, ymin = lwr_Fix, ymax = upr_Fix), fill = 'blue',  alpha = 0.3) +
+  geom_line(lty = 3) + theme_bw() +
+  xlab('Standardized temperature') + ylab('Standardized phenology')
+```
+
+
+
+
