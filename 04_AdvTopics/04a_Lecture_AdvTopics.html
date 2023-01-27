@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Radchuk Viktoriia" />
+  <title>Mixed-effects models: advanced topics</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="04a_Lecture_AdvTopics_files/reveal.js-3.3.0.1/css/reveal.css"/>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="04a_Lecture_AdvTopics_files/reveal.js-3.3.0.1/css/theme/simple.css" id="theme">
+
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+
+<!-- Printing and PDF exports -->
+<script id="paper-css" type="application/dynamic-css">
+
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+
+@media print {
+
+	/* SECTION 1: Set default width, margin, float, and
+	   background. This prevents elements from extending
+	   beyond the edge of the printed page, and prevents
+	   unnecessary background images from printing */
+	html {
+		background: #fff;
+		width: auto;
+		height: auto;
+		overflow: visible;
+	}
+	body {
+		background: #fff;
+		font-size: 20pt;
+		width: auto;
+		height: auto;
+		border: 0;
+		margin: 0 5%;
+		padding: 0;
+		overflow: visible;
+		float: none !important;
+	}
+
+	/* SECTION 2: Remove any elements not needed in print.
+	   This would include navigation, ads, sidebars, etc. */
+	.nestedarrow,
+	.controls,
+	.fork-reveal,
+	.share-reveal,
+	.state-background,
+	.reveal .progress,
+	.reveal .backgrounds {
+		display: none !important;
+	}
+
+	/* SECTION 3: Set body font face, size, and color.
+	   Consider using a serif font for readability. */
+	body, p, td, li, div {
+		font-size: 20pt!important;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		color: #000;
+	}
+
+	/* SECTION 4: Set heading font face, sizes, and color.
+	   Differentiate your headings from your body text.
+	   Perhaps use a large sans-serif for distinction. */
+	h1,h2,h3,h4,h5,h6 {
+		color: #000!important;
+		height: auto;
+		line-height: normal;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		text-shadow: 0 0 0 #000 !important;
+		text-align: left;
+		letter-spacing: normal;
+	}
+	/* Need to reduce the size of the fonts for printing */
+	h1 { font-size: 28pt !important;  }
+	h2 { font-size: 24pt !important; }
+	h3 { font-size: 22pt !important; }
+	h4 { font-size: 22pt !important; font-variant: small-caps; }
+	h5 { font-size: 21pt !important; }
+	h6 { font-size: 20pt !important; font-style: italic; }
+
+	/* SECTION 5: Make hyperlinks more usable.
+	   Ensure links are underlined, and consider appending
+	   the URL to the end of the link for usability. */
+	a:link,
+	a:visited {
+		color: #000 !important;
+		font-weight: bold;
+		text-decoration: underline;
+	}
+	/*
+	.reveal a:link:after,
+	.reveal a:visited:after {
+		content: " (" attr(href) ") ";
+		color: #222 !important;
+		font-size: 90%;
+	}
+	*/
+
+
+	/* SECTION 6: more reveal.js specific additions by @skypanther */
+	ul, ol, div, p {
+		visibility: visible;
+		position: static;
+		width: auto;
+		height: auto;
+		display: block;
+		overflow: visible;
+		margin: 0;
+		text-align: left !important;
+	}
+	.reveal pre,
+	.reveal table {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.reveal pre code {
+		padding: 20px;
+		border: 1px solid #ddd;
+	}
+	.reveal blockquote {
+		margin: 20px 0;
+	}
+	.reveal .slides {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 0 !important;
+		zoom: 1 !important;
+
+		overflow: visible !important;
+		display: block !important;
+
+		text-align: left !important;
+		-webkit-perspective: none;
+		   -moz-perspective: none;
+		    -ms-perspective: none;
+		        perspective: none;
+
+		-webkit-perspective-origin: 50% 50%;
+		   -moz-perspective-origin: 50% 50%;
+		    -ms-perspective-origin: 50% 50%;
+		        perspective-origin: 50% 50%;
+	}
+	.reveal .slides section {
+		visibility: visible !important;
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		display: block !important;
+		overflow: visible !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 60px 20px !important;
+		z-index: auto !important;
+
+		opacity: 1 !important;
+
+		page-break-after: always !important;
+
+		-webkit-transform-style: flat !important;
+		   -moz-transform-style: flat !important;
+		    -ms-transform-style: flat !important;
+		        transform-style: flat !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+
+		-webkit-transition: none !important;
+		   -moz-transition: none !important;
+		    -ms-transition: none !important;
+		        transition: none !important;
+	}
+	.reveal .slides section.stack {
+		padding: 0 !important;
+	}
+	.reveal section:last-of-type {
+		page-break-after: avoid !important;
+	}
+	.reveal section .fragment {
+		opacity: 1 !important;
+		visibility: visible !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+	}
+	.reveal section img {
+		display: block;
+		margin: 15px 0px;
+		background: rgba(255,255,255,1);
+		border: 1px solid #666;
+		box-shadow: none;
+	}
+
+	.reveal section small {
+		font-size: 0.8em;
+	}
+
+}  
+</script>
+
+
+<script id="pdf-css" type="application/dynamic-css">
+    
+/**
+ * This stylesheet is used to print reveal.js
+ * presentations to PDF.
+ *
+ * https://github.com/hakimel/reveal.js#pdf-export
+ */
+
+* {
+	-webkit-print-color-adjust: exact;
+}
+
+body {
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Remove any elements not needed in print. */
+.nestedarrow,
+.reveal .controls,
+.reveal .progress,
+.reveal .playback,
+.reveal.overview,
+.fork-reveal,
+.share-reveal,
+.state-background {
+	display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-shadow: 0 0 0 #000 !important;
+}
+
+.reveal pre code {
+	overflow: hidden !important;
+	font-family: Courier, 'Courier New', monospace !important;
+}
+
+ul, ol, div, p {
+	visibility: visible;
+	position: static;
+	width: auto;
+	height: auto;
+	display: block;
+	overflow: visible;
+	margin: auto;
+}
+.reveal {
+	width: auto !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+.reveal .slides {
+	position: static;
+	width: 100%;
+	height: auto;
+
+	left: auto;
+	top: auto;
+	margin: 0 !important;
+	padding: 0 !important;
+
+	overflow: visible;
+	display: block;
+
+	-webkit-perspective: none;
+	   -moz-perspective: none;
+	    -ms-perspective: none;
+	        perspective: none;
+
+	-webkit-perspective-origin: 50% 50%; /* there isn't a none/auto value but 50-50 is the default */
+	   -moz-perspective-origin: 50% 50%;
+	    -ms-perspective-origin: 50% 50%;
+	        perspective-origin: 50% 50%;
+}
+
+.reveal .slides section {
+	page-break-after: always !important;
+
+	visibility: visible !important;
+	position: relative !important;
+	display: block !important;
+	position: relative !important;
+
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	min-height: 1px;
+
+	opacity: 1 !important;
+
+	-webkit-transform-style: flat !important;
+	   -moz-transform-style: flat !important;
+	    -ms-transform-style: flat !important;
+	        transform-style: flat !important;
+
+	-webkit-transform: none !important;
+	   -moz-transform: none !important;
+	    -ms-transform: none !important;
+	        transform: none !important;
+}
+
+.reveal section.stack {
+	margin: 0 !important;
+	padding: 0 !important;
+	page-break-after: avoid !important;
+	height: auto !important;
+	min-height: auto !important;
+}
+
+.reveal img {
+	box-shadow: none;
+}
+
+.reveal .roll {
+	overflow: visible;
+	line-height: 1em;
+}
+
+/* Slide backgrounds are placed inside of their slide when exporting to PDF */
+.reveal section .slide-background {
+	display: block !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: -1;
+}
+
+/* All elements should be above the slide-background */
+.reveal section>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Display slide speaker notes when 'showNotes' is enabled */
+.reveal .speaker-notes-pdf {
+	display: block;
+	width: 100%;
+	max-height: none;
+	left: auto;
+	top: auto;
+	z-index: 100;
+}
+
+/* Display slide numbers when 'slideNumber' is enabled */
+.reveal .slide-number-pdf {
+	display: block;
+	position: absolute;
+	font-size: 14px;
+}
+
+</script>
+
+
+<script>
+var style = document.createElement( 'style' );
+style.type = 'text/css';
+var style_script_id = window.location.search.match( /print-pdf/gi ) ? 'pdf-css' : 'paper-css';
+var style_script = document.getElementById(style_script_id).text;
+style.innerHTML = style_script;
+document.getElementsByTagName('head')[0].appendChild(style);
+</script>
+
+    <script src="04a_Lecture_AdvTopics_files/header-attrs-2.19/header-attrs.js"></script>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">Mixed-effects models: advanced topics</h1>
+    <h2 class="author">Radchuk Viktoriia</h2>
+    <h3 class="date">2022-1-5</h3>
+</section>
+
+<section class="slide level2">
+
+<style type="text/css">
+.reveal ul {
+  font-size: 30px;
+}
+.reveal ol {
+  font-size: 30px;
+  margin-bottom: -10px;
+}
+.reveal p {
+ font-size: 30px;
+  margin-bottom: -10px;
+}
+.reveal  pre {
+  font-size: 14px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: -2px;
+}
+.reveal code.r{
+  font-size: 14px;
+}
+
+pre[class] {
+  max-height: 200px;
+}
+
+.scroll-100 {
+  max-height: 100px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+</style>
+</section>
+<section id="more-complex-random-structures"
+class="title-slide slide level1">
+<h1>More complex random structures</h1>
+<p>Ecological data are often characterized by autocorrelation, either
+temporal or spatial (or both).<br />
+Another commonly encountered structure is that levels of some factor are
+nested within those of the other, i.e. hierarchical model structures.
+For example, we sample species richness in 5 randomly selected plots at
+7 different kettle holes. The plots are nested within the kettle
+holes.</p>
+</section>
+
+<section id="temporal-autocorrelation" class="title-slide slide level1">
+<h1>Temporal autocorrelation</h1>
+<ul>
+<li class="fragment">Manifests itself in residuals.<br />
+</li>
+<li class="fragment">Can be detected with Autocorrelation Function (ACF)
+or with formal tests (e.g. Durbin-Watson test).<br />
+</li>
+<li class="fragment">If present, have to be accounted for, for example
+by including the autocorrelation structure of first order (AR1) in the
+residual variance.</li>
+</ul>
+</section>
+
+<section id="let-us-do-it" class="title-slide slide level1">
+<h1>Let us do it!</h1>
+<p>We use the data on relation between temperature and phenology, as we
+have already detected some issues with temporal autocorrelation
+there.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&#39;data&#39;</span>, <span class="st">&#39;dat_phen_temp_subs.csv&#39;</span>))</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>dat_fac <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_if</span>(is.character, as.factor) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ID =</span> <span class="fu">as.factor</span>(ID))</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(dat_fac)</span></code></pre></div>
+<pre><code>## &#39;data.frame&#39;:    750 obs. of  20 variables:
+##  $ ID             : Factor w/ 25 levels &quot;1&quot;,&quot;21&quot;,&quot;22&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Year           : int  1953 1954 1955 1956 1957 1959 1960 1961 1962 1963 ...
+##  $ Study_Authors  : Factor w/ 13 levels &quot;Ahola_et_al&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Journal        : Factor w/ 7 levels &quot;Behavioural Ecology &amp; Sociobiology&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...
+##  $ Year_pub       : int  2009 2009 2009 2009 2009 2009 2009 2009 2009 2009 ...
+##  $ Title          : Factor w/ 8 levels &quot;Bergmann?s rule and climate change revisited: Disentangling environmental and genetic responses in a wild bird population&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...
+##  $ Species        : Factor w/ 7 levels &quot;Cyanistes caeruleus&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...
+##  $ Taxon          : Factor w/ 1 level &quot;Bird&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Location       : Factor w/ 17 levels &quot;Askainen&quot;,&quot;Boshoek, Antwerp&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Longitude      : num  21.8 21.8 21.8 21.8 21.8 ...
+##  $ Latitude       : num  60.6 60.6 60.6 60.6 60.6 ...
+##  $ Country        : Factor w/ 12 levels &quot;Belgium&quot;,&quot;Canada&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...
+##  $ Trait          : Factor w/ 4 levels &quot;ArrivalDate&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...
+##  $ Trait_Categ_det: Factor w/ 2 levels &quot;Arrival_Date&quot;,..: 2 2 2 2 2 2 2 2 2 2 ...
+##  $ Trait_Categ    : Factor w/ 1 level &quot;Phenological&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Trait_mean     : num  -1.444 -0.296 1.411 0.587 1.21 ...
+##  $ Trait_SE       : num  0.166 0.0842 0.2379 0.2411 0.2762 ...
+##  $ Clim           : num  3.426 1.296 -1.191 -0.631 0.757 ...
+##  $ det_Clim       : num  1.585 -0.222 -2.323 -1.903 -0.8 ...
+##  $ det_Clim2      : num  2.5111 0.0491 5.3941 3.6229 0.6402 ...</code></pre>
+</section>
+
+<section id="fit-the-model-with-random-slope"
+class="title-slide slide level1">
+<h1>Fit the model with random slope</h1>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">fitme</span>(Trait_mean <span class="sc">~</span> det_Clim <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> det_Clim<span class="sc">|</span>Species), <span class="at">data =</span> dat_fac, <span class="at">method =</span> <span class="st">&#39;REML&#39;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod)</span></code></pre></div>
+<pre><code>## formula: Trait_mean ~ det_Clim + (1 + det_Clim | Species)
+## REML: Estimation of ranCoefs and phi by REML.
+##       Estimation of fixed effects by ML.
+## Estimation of phi by &#39;outer&#39; REML, maximizing restricted logL.
+## family: gaussian( link = identity ) 
+##  ------------ Fixed effects (beta) ------------
+##               Estimate Cond. SE    t-value
+## (Intercept)  3.561e-16  0.02674  1.332e-14
+## det_Clim    -2.025e-01  0.20826 -9.722e-01
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##          --- Random-coefficients Cov matrices:
+##    Group        Term      Var.      Corr.
+##  Species (Intercept) 5.362e-09           
+##  Species    det_Clim     0.291 -1.516e-29
+## # of obs: 750; # of groups: Species, 7 
+##  -------------- Residual variance  ------------
+## phi estimate was 0.53617 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL       (p_v(h)): -841.9937
+## Re.logL  (p_b,v(h)): -845.3465</code></pre>
+</section>
+
+<section id="model-diagnositcs-with-dharma"
+class="title-slide slide level1">
+<h1>Model diagnositcs with DHARMa</h1>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">simulateResiduals</span>(mod, <span class="at">plot =</span> T)  </span></code></pre></div>
+<p><img src="04a_Lecture_AdvTopics_files/figure-revealjs/simresid%20DHA-1.png" width="70%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="test-of-autocorrelation" class="title-slide slide level1">
+<h1>Test of autocorrelation</h1>
+<p>We test autocorrelation per study. Let’s look at study 21.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>sim_1 <span class="ot">&lt;-</span> <span class="fu">recalculateResiduals</span>(sim, <span class="at">sel =</span> dat_fac<span class="sc">$</span>ID <span class="sc">==</span> <span class="dv">21</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">testTemporalAutocorrelation</span>(sim_1, <span class="at">time =</span> dat_fac<span class="sc">$</span>Year[dat_fac<span class="sc">$</span>ID <span class="sc">==</span> <span class="dv">21</span>])</span></code></pre></div>
+<p><img src="04a_Lecture_AdvTopics_files/figure-revealjs/testAutocor-1.png" width="50%" style="display: block; margin: auto;" /></p>
+<pre><code>## 
+##  Durbin-Watson test
+## 
+## data:  simulationOutput$scaledResiduals ~ 1
+## DW = 1.511, p-value = 0.04778
+## alternative hypothesis: true autocorrelation is not 0</code></pre>
+</section>
+
+<section id="fit-the-model-with-ar1-structure"
+class="title-slide slide level1">
+<h1>Fit the model with AR1 structure</h1>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>spaMM_AR1 <span class="ot">&lt;-</span> <span class="fu">fitme</span>(Trait_mean <span class="sc">~</span> det_Clim <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> det_Clim<span class="sc">|</span>Species) <span class="sc">+</span> <span class="fu">AR1</span>(<span class="dv">1</span><span class="sc">|</span>Year), <span class="at">data =</span> dat_fac, <span class="at">method =</span> <span class="st">&#39;REML&#39;</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(spaMM_AR1)</span></code></pre></div>
+<pre><code>## formula: Trait_mean ~ det_Clim + (1 + det_Clim | Species) + AR1(1 | Year)
+## REML: Estimation of lambda, corrPars, ranCoefs and phi by REML.
+##       Estimation of fixed effects by ML.
+## Estimation of phi by &#39;outer&#39; REML, maximizing restricted logL.
+## family: gaussian( link = identity ) 
+##  ------------ Fixed effects (beta) ------------
+##             Estimate Cond. SE t-value
+## (Intercept)   0.1348   0.1180  1.1429
+## det_Clim     -0.1914   0.2042 -0.9373
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##                    --- Correlation parameters:
+##   2.ARphi 
+## 0.7604047 
+##          --- Random-coefficients Cov matrices:
+##    Group        Term     Var.  Corr.
+##  Species (Intercept) 0.005561       
+##  Species    det_Clim   0.2803 0.8261
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    Year  :  0.1143  
+##              --- Coefficients for log(lambda):
+##  Group        Term Estimate Cond.SE
+##   Year (Intercept)   -2.169  0.2558
+## # of obs: 750; # of groups: Species, 7; Year, 67 
+##  -------------- Residual variance  ------------
+## phi estimate was 0.458307 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL       (p_v(h)): -813.0338
+## Re.logL  (p_b,v(h)): -814.9412</code></pre>
+<p><span style="font-size: 80%;"> The output now also contains the
+estimate of autocorrelation <span class="math inline">\(\phi\)</span> in
+residuals, which is rather high, 0.76.<br />
+We also see the estimate of the variation due to the Year effect.
+</span></p>
+</section>
+
+<section id="the-model-with-ar1-structure"
+class="title-slide slide level1">
+<h1>The model with AR1 structure</h1>
+<ul>
+<li class="fragment">Notice that residual variance <span
+class="math inline">\(\phi\)</span> declines compared to the model
+without AR1 structure.<br />
+</li>
+<li class="fragment">Important: by using syntax <code>AR1(1|Year)</code>
+we are assuming that autocorrelation is the same in each study. Ideally
+we should fit autocorrelation per study (since studies performed on
+different species / in different locations). To do it we use the syntax
+<code>AR1(ID|Year)</code>.<br />
+</li>
+<li class="fragment"><span style="color:orange">Trying fitting it. What
+do you get?</span></li>
+</ul>
+</section>
+
+<section id="syntax-with-glmmtmb" class="title-slide slide level1">
+<h1>Syntax with glmmTMB</h1>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dat_fac<span class="sc">$</span>Year_fac <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(dat_fac<span class="sc">$</span>Year)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>TMB_AR1 <span class="ot">&lt;-</span> <span class="fu">glmmTMB</span>(Trait_mean <span class="sc">~</span> det_Clim <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> det_Clim <span class="sc">|</span>Species) <span class="sc">+</span>  <span class="fu">ar1</span>(Year_fac <span class="sc">-</span> <span class="dv">1</span> <span class="sc">|</span> ID), <span class="at">data=</span>dat_fac, </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">control=</span><span class="fu">glmmTMBControl</span>(<span class="at">optimizer=</span>optim,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">optArgs=</span><span class="fu">list</span>(<span class="at">method=</span><span class="st">&quot;BFGS&quot;</span>)))</span></code></pre></div>
+<pre><code>## Warning in fitTMB(TMBStruc): Model convergence problem; non-positive-definite
+## Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+Facing the reality<br />
+
+<p style="text-align:center;">
+<img src="img/CodeDoesntWork_Meme.jpg" height = "300"/>
+</p>
+<p style="font-size: 40%;">
+<a href="http://www.quickmeme.com/meme/3uaxof"
+class="uri">http://www.quickmeme.com/meme/3uaxof</a>
+</p>
+</section>
+
+<section id="ar1-structure-with-glmmtmb"
+class="title-slide slide level1">
+<h1>AR1 structure with glmmTMB</h1>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(TMB_AR1)</span></code></pre></div>
+<pre><code>##  Family: gaussian  ( identity )
+## Formula:          
+## Trait_mean ~ det_Clim + (1 + det_Clim | Species) + ar1(Year_fac -      1 | ID)
+## Data: dat_fac
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##       NA       NA       NA       NA      742 
+## 
+## Random effects:
+## 
+## Conditional model:
+##  Groups   Name         Variance  Std.Dev.  Corr                 
+##  Species  (Intercept)  9.887e-07 0.0009943                      
+##           det_Clim     2.460e-01 0.4959816 0.94                 
+##  ID       Year_fac1953 1.407e-01 0.3751216 0.90 (ar1) 0.90 (ar1)
+##  Residual              4.024e-01 0.6343124                      
+## Number of obs: 750, groups:  Species, 7; ID, 25
+## 
+## Dispersion estimate for gaussian family (sigma^2): 0.402 
+## 
+## Conditional model:
+##             Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) -0.01798    0.05504  -0.327    0.744
+## det_Clim    -0.20285    0.19169  -1.058    0.290</code></pre>
+<p><span style="color:orange">Do you recall what were the signs of
+singular fit in mixed-effects models?</span></p>
+</section>
+
+<section id="model-convergence-problem"
+class="title-slide slide level1">
+<h1>Model convergence problem</h1>
+<p>For more details see here: <a
+href="https://cran.r-project.org/web/packages/glmmTMB/vignettes/troubleshooting.html">Troubleshoot
+glmmTMB</a><br />
+In this particular case the problem is too few levels of grouping
+variable (7 species)</p>
+</section>
+
+<section id="model-diagnostics-spamm" class="title-slide slide level1">
+<h1>Model diagnostics: spaMM</h1>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>sim_spam <span class="ot">&lt;-</span> <span class="fu">simulateResiduals</span>(spaMM_AR1, <span class="at">plot =</span> T)  </span></code></pre></div>
+<p><img src="04a_Lecture_AdvTopics_files/figure-revealjs/simresid%20AR1%20spaMM-1.png" width="45%" style="display: block; margin: auto;" />
+<span style="font-size:70%;"> Important: if you would test for residual
+autocorrelation, the result will still be the same as before. You need
+to simulate the residuals in a different way (conditional on the fitted
+correlated random effects to properly assess autocorrelation in
+residuals after including autocorrelation structure in your
+model)</span></p>
+</section>
+
+<section id="aic-and-aicc" class="title-slide slide level1">
+<h1>AIC and AICc</h1>
+<ul>
+<li class="fragment"><span class="math inline">\(AIC = -2\times ln(L) +
+2\times k\)</span><br />
+where <em>L</em> is the maximum likelihood estimate of the model,<br />
+and <em>k</em> is the number of fitted parameters.<br />
+</li>
+<li class="fragment">AIC was formulated by Hirotugu Akaike, a Japanese
+statistician.<br />
+</li>
+<li class="fragment">A correction for small sample sizes: AICc <span
+class="math inline">\(AIC{c} = AIC + \dfrac{2 \times k \times (k +1)}{n
+- k - 1}\)</span><br />
+where n is the sample size.<br />
+</li>
+<li class="fragment">‘Small sizes’ are often defined as rule of thumb
+when <span class="math inline">\(\dfrac{n}k &lt; 40\)</span>.<br />
+</li>
+<li class="fragment">Since AICc approximates AIC at large sample sizes,
+it is recommended to always use AICc.</span></li>
+</ul>
+</section>
+
+<section id="model-selection-why" class="title-slide slide level1">
+<h1>Model selection: why?</h1>
+<ul>
+<li class="fragment">There is a difference in philosophy behind
+<strong>model selection</strong> based on AIC and classical
+<strong>hypothesis testing</strong>.<br />
+</li>
+<li class="fragment"><strong>Model selection</strong> aims to detect the
+‘best model’ and is often used as means of generating hypotheses (rather
+exploratory analyses) or for making predictions.<br />
+</li>
+<li class="fragment"><strong>Hypothesis testing</strong> is used for
+inference and testing specific a-priori formulated hypotheses.<br />
+</li>
+<li class="fragment">That is not to say that there are no hypotheses
+formulated when doing model selection, but these are not about the
+direction of impact of one predictor on the response variable but rather
+about the best group of predictors explaining the response
+variable.</li>
+</ul>
+</section>
+
+<section id="model-selection-when" class="title-slide slide level1">
+<h1>Model selection: when?</h1>
+<p>Generally it is often used in observational studies, where no
+experiments can be set up to test a specific hypothesis. Such
+observational studies often have many covariates affecting the response
+variable.<br />
+A specific field where model selection is often applied in habitat
+suitability analyses.</p>
+</section>
+
+<section id="model-selection-how" class="title-slide slide level1">
+<h1>Model selection: how?</h1>
+<ul>
+<li class="fragment">AIC can be used to compare diverse models (no
+constraints on models being nested within each other, as with LRT), as
+long as they are fitted to <strong>EXACTLY</strong> the same data
+set.<br />
+</li>
+<li class="fragment">AIC(c) of models are compared. The model that is
+supported by the data best is the one with the minimum AIC(c) given it
+is far away from other models in terms of their AIC(c). This distance to
+the ‘next-best’ model is defined as <span class="math inline">\(\Delta
+AIC\)</span>.</li>
+</ul>
+</section>
+
+<section id="model-selection-how-1" class="title-slide slide level1">
+<h1>Model selection: how?</h1>
+<ul>
+<li class="fragment"><span class="math inline">\(\Delta AIC\)</span>
+should be around 7-8 to consider that models differ in their support of
+the data. Though a <span class="math inline">\(\Delta AIC\)</span>
+threshold of 2 is often used in ecological literature, its origin is
+unclear, see e.g. Burnham et al. (2011).<br />
+</li>
+<li class="fragment">If <span class="math inline">\(\Delta AIC\)</span>
+between models is &lt; 7 then parsimony rule is typically applied to
+select the ‘best’ model, i.e. chosing the model among the candidate set
+that has the least parameters.</li>
+</ul>
+</section>
+
+<section id="model-selection-example" class="title-slide slide level1">
+<h1>Model selection example</h1>
+<p>A hypothetical example</p>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>AIC</th>
+<th><span class="math inline">\(\Delta AIC\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Temp + Temp2 + Precip + Precip2 + Year</td>
+<td>230</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>Temp + Temp2 + Precip + Year</td>
+<td>208</td>
+<td>22</td>
+</tr>
+<tr class="odd">
+<td>Temp + Temp2 + Precip + LandUse</td>
+<td>206</td>
+<td>24</td>
+</tr>
+<tr class="even">
+<td>Temp + Precip + LandUse</td>
+<td>205.3</td>
+<td>24.7</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section id="model-selection-potential-misuse"
+class="title-slide slide level1">
+<h1>Model selection: potential misuse</h1>
+<p>Some packages like MuMin make it all automatic but have to be applied
+thoughtfully.<br />
+From Burnham &amp; Anderson (2002): <span style="color:green">“Careful,
+a priori consideration of alternative models will often require a major
+change in emphasis among many people.[…] This a priori strategy is in
+contrast to strategies advocated by others who view modeling and data
+analysis as a highly iterative and interactive exercise. Such a
+strategy, to us, represents deliberate data dredging and should be
+reserved for early exploratory phases of initial investigation. Such an
+exploratory avenue is not the subject of this book.”</span></p>
+</section>
+
+<section id="multimodel-inference-model-averaging-weighting-etc"
+class="title-slide slide level1">
+<h1>Multimodel inference: Model averaging, weighting etc</h1>
+<ul>
+<li class="fragment">Often there is no single model that is strongly
+supported by the data and is much better than the rest of the candidate
+models.<br />
+</li>
+<li class="fragment">If data support for several models is very similar,
+model averaging is one approach to obtain the estimates for the
+parameters across those models.<br />
+</li>
+<li class="fragment">BUT: this is a topic on its own.</li>
+</ul>
+</section>
+
+<section id="beyond-normality-generalised-linear-mixed-effects-models"
+class="title-slide slide level1">
+<h1>Beyond normality: Generalised Linear Mixed-Effects Models</h1>
+<ul>
+<li class="fragment">We so far talked about Linear Mixed-Effects models,
+in which the process follows normal distribution.<br />
+</li>
+<li class="fragment">There are many cases where variables are not
+following normal distribution.<br />
+<img src="04a_Lecture_AdvTopics_files/figure-revealjs/non-norm-1.png" width="55%" style="display: block; margin: auto;" /></li>
+</ul>
+</section>
+
+<section id="generalised-linear-mixed-effects-models"
+class="title-slide slide level1">
+<h1>Generalised Linear Mixed-Effects Models</h1>
+<p>Three components of the generalised linear model:</p>
+<ul>
+<li class="fragment">the distribution of the response variable,<br />
+</li>
+<li class="fragment">specification of the systematic component in terms
+of explanatory variables,<br />
+</li>
+<li class="fragment">the link function, used to described the relation
+between the mean of the response variable and the systematic part.</li>
+</ul>
+</section>
+
+<section id="distributions" class="title-slide slide level1">
+<h1>Distributions</h1>
+<ul>
+<li class="fragment">Normal distribution<br />
+</li>
+<li class="fragment">Poisson distribution<br />
+</li>
+<li class="fragment"><span style="color:grey"> Negative Binomial
+distribution</span><br />
+</li>
+<li class="fragment">Binomial distribution<br />
+</li>
+<li class="fragment"><span style="color:grey"> Gamma
+distribution</span><br />
+</li>
+<li class="fragment"><span style="color:grey"> Zero-inflated Poisson
+distribution</span><br />
+</li>
+<li class="fragment"><span style="color:grey"> Zero-inflated negative
+binomial distribution</span><br />
+</li>
+<li class="fragment">…</li>
+</ul>
+</section>
+
+<section id="which-distribution-to-use"
+class="title-slide slide level1">
+<h1>Which distribution to use?</h1>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 30%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Distribution</th>
+<th>Data type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Normal</td>
+<td>Continuous; <span class="math inline">\((-\infty,
+\infty)\)</span></td>
+<td>Height, temperature, weight</td>
+</tr>
+<tr class="even">
+<td>Poisson</td>
+<td>Counts; <span class="math inline">\(\geq 0, integer\)</span></td>
+<td>Number of offspring</td>
+</tr>
+<tr class="odd">
+<td>Negative Binomial</td>
+<td>Overdispersed counts; <span class="math inline">\(\geq 0,
+integer\)</span></td>
+<td>Number of offspring, many 0s</td>
+</tr>
+<tr class="even">
+<td>Binomial</td>
+<td>Proportional data, presence/absence</td>
+<td>alive/dead, female/male</td>
+</tr>
+<tr class="odd">
+<td>Gamma</td>
+<td>Continuous; <span class="math inline">\([0, \infty)\)</span></td>
+<td>Height, length</td>
+</tr>
+<tr class="even">
+<td>Zero-inflated Poisson</td>
+<td>Overdispersed counts; <span class="math inline">\(\geq 0,
+integer\)</span></td>
+<td>Number of offspring, many 0s</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section id="specification-of-the-systematic-component"
+class="title-slide slide level1">
+<h1>Specification of the systematic component</h1>
+<p>Predictors affect a response variable via a linear predictor: <span
+class="math display">\[\eta =beta_0 + \beta_1 \times x_1 + \beta_2
+\times x_2 + ... + \beta_p \times x_p \]</span></p>
+</section>
+
+<section id="link-function" class="title-slide slide level1">
+<h1>Link function</h1>
+<p>Link function (g) specifies the function relating the linear
+predictor <span class="math inline">\(\eta\)</span> and the expected
+value of <span class="math inline">\(Y\)</span>, that is mean response
+<span class="math inline">\(\mu\)</span><br />
+<span class="math display">\[\eta = g(\mu)\]</span></p>
+</section>
+
+<section id="poisson" class="title-slide slide level1">
+<h1>Poisson</h1>
+link is log<br />
+
+<p style='text-align: left;'>
+<ol type="1">
+<li class="fragment"><span class="math inline">\(Y\)</span> is
+Poisson-distributed with mean <span
+class="math inline">\(\mu\)</span><br />
+<span class="math inline">\(Y \sim P(\mu)\)</span>; <span
+class="math inline">\(E(Y) = \mu\)</span> and <span
+class="math inline">\(var(Y) = \mu\)</span><br />
+</li>
+<li class="fragment">Systematic part:<br />
+<span class="math display">\[\eta = beta_0 + \beta_1 \times x_1 +  ... +
+\beta_p \times x_p\]</span><br />
+</li>
+<li class="fragment">Logarithmic link is used between the mena of Y and
+the predictor <span class="math inline">\(\eta\)</span>:<br />
+<span class="math inline">\(log(\mu) = \eta\)</span><br />
+Then <span class="math inline">\(\mu = \exp(\eta)\)</span>, because
+exp() is an inverse of log().
+</p>
+<blockquote>
+
+</blockquote></li>
+</ol>
+</section>
+
+<section id="binomial" class="title-slide slide level1">
+<h1>Binomial</h1>
+link is logit (though others are also possible, e.g. probit,
+log-log)<br />
+
+<p style='text-align: left;'>
+<ol type="1">
+<li class="fragment"><span class="math inline">\(Y\)</span> is
+Binomial-distributed with probability <span
+class="math inline">\(\pi\)</span> and <span
+class="math inline">\(n_i\)</span> = 1 independent trial.<br />
+</li>
+<li class="fragment">Systematic part:<br />
+<span class="math inline">\(\eta =beta_0 + \beta_1 \times x_1 + ... +
+\beta_p \times x_p\)</span><br />
+</li>
+<li class="fragment">logit link is used between the mean of Y and the
+predictor <span class="math inline">\(\eta\)</span>:<br />
+<span class="math inline">\(logit(\pi) = \eta\)</span><br />
+With some mathematics it follows that <span class="math inline">\(\pi =
+\frac{exp(beta_0 + \beta_1 \times x_1 + ... + \beta_p \times
+x_p)}{1+exp(beta_0 + \beta_1 \times x_1 + ... + \beta_p \times
+x_p)}\)</span>.
+</p>
+<blockquote>
+
+</blockquote></li>
+</ol>
+</section>
+
+<section id="lets-fit-a-glmm-in-r" class="title-slide slide level1">
+<h1>Let’s fit a GLMM in R!</h1>
+<p>We simulate the data for offspring produced by different species of
+mammals. We have sampled offspring in 10 different species, recording
+the number of offspring for 20 individuals per species. Number of
+offspring is simulated to be negatively affected by temperature (x).</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">6</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>dat_off <span class="ot">&lt;-</span> <span class="fu">SimulateMix</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="sc">-</span><span class="fl">0.6</span>, <span class="at">n =</span> <span class="dv">200</span>, <span class="at">group.nb =</span> <span class="dv">10</span>, </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">var.group =</span> <span class="fl">0.1</span>, <span class="at">var.error =</span> <span class="fl">0.05</span>, <span class="at">times.perGroup =</span> <span class="dv">20</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_off)</span></code></pre></div>
+<pre><code>##    intercept slope          x   group         b       error    lambda y
+## 1          0  -0.6  0.5392120 group_1 0.4497119 -0.08939905 1.0374706 0
+## 11         0  -0.6  3.4557022 group_1 0.4497119 -0.09429525 0.1794238 0
+## 21         0  -0.6  1.0374980 group_1 0.4497119  0.01154542 0.8510865 0
+## 31         0  -0.6 -1.3429188 group_1 0.4497119 -0.67779802 1.7818731 3
+## 41         0  -0.6 -1.7703283 group_1 0.4497119 -0.12605833 3.9982249 5
+## 51         0  -0.6 -0.1082674 group_1 0.4497119 -0.05348100 1.5859622 1</code></pre>
+</section>
+
+<section id="histogram-of-offspring-number"
+class="title-slide slide level1">
+<h1>Histogram of offspring number</h1>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(dat_off<span class="sc">$</span>y, <span class="at">xlab =</span> <span class="st">&#39;Number of offspring&#39;</span>, <span class="at">col =</span> <span class="st">&#39;black&#39;</span>, <span class="at">main =</span> <span class="cn">NULL</span>) </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">mean</span>(dat_off<span class="sc">$</span>y), <span class="at">col =</span> <span class="st">&#39;red&#39;</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span></code></pre></div>
+<p><img src="04a_Lecture_AdvTopics_files/figure-revealjs/hist%20Offspr-1.png" width="50%" height="50%" style="display: block; margin: auto;" /></p>
+</section>
+
+<section id="poisson-glmm" class="title-slide slide level1">
+<h1>Poisson GLMM</h1>
+<p>We use function <code>glmer()</code> from the library
+<code>lme4</code>.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>modPois <span class="ot">&lt;-</span> <span class="fu">glmer</span>(y <span class="sc">~</span> x <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>group), <span class="at">data =</span> dat_off, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">&#39;log&#39;</span>))</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(modPois)</span></code></pre></div>
+<pre><code>## Generalized linear mixed model fit by maximum likelihood (Laplace
+##   Approximation) [glmerMod]
+##  Family: poisson  ( log )
+## Formula: y ~ x + (1 | group)
+##    Data: dat_off
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##    550.9    560.8   -272.4    544.9      197 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -1.5007 -0.6743 -0.3463  0.4943  3.5916 
+## 
+## Random effects:
+##  Groups Name        Variance Std.Dev.
+##  group  (Intercept) 0.1477   0.3843  
+## Number of obs: 200, groups:  group, 10
+## 
+## Fixed effects:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  -0.2233     0.1515  -1.474    0.141    
+## x            -0.6602     0.0333 -19.823   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##   (Intr)
+## x 0.473</code></pre>
+<p><span style="color:orange">How do you interpret these
+results?</span></p>
+</section>
+
+<section id="model-diagnostics" class="title-slide slide level1">
+<h1>Model diagnostics</h1>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">simulateResiduals</span>(modPois, <span class="at">plot =</span> T)  </span></code></pre></div>
+<p><img src="04a_Lecture_AdvTopics_files/figure-revealjs/modDiagn-1.png" width="50%" height="50%" style="display: block; margin: auto;" />
+<span style="color:orange">How do you interpret such results of model
+diagnostics?</span></p>
+</section>
+
+<section id="but-remember-reality-can-be-ugly"
+class="title-slide slide level1">
+<h1>But remember: reality can be ugly</h1>
+<p style="text-align:center;">
+<img src="img/CodeDoesntWork_Meme.jpg" height = "400"/>
+</p>
+<p style="font-size: 40%;">
+<a href="http://www.quickmeme.com/meme/3uaxof"
+class="uri">http://www.quickmeme.com/meme/3uaxof</a>
+</p>
+</section>
+
+<section id="overdispersion" class="title-slide slide level1">
+<h1>Overdispersion</h1>
+<ul>
+<li class="fragment">occurs if variation in the data is greater than
+would be expected under a given model.<br />
+</li>
+<li class="fragment">often arises because some distributions have too
+few parameters to accommodate for the variability in observations. For
+example, in Poisson the variance = mean, constraining the variance in
+the model, which may not be the case in the data.<br />
+</li>
+<li class="fragment">Overdispersion = Resid. Deviance / df.<br />
+</li>
+<li class="fragment">Normally this ratio should be ~ 1, if it is
+&gt;&gt; 1 we talk about overdispersion.</li>
+</ul>
+</section>
+
+<section id="formal-tests-of-overdispersion"
+class="title-slide slide level1">
+<h1>Formal tests of overdispersion</h1>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testDispersion</span>(sim)</span></code></pre></div>
+<p><img src="04a_Lecture_AdvTopics_files/figure-revealjs/test%20Overdisp-1.png" width="50%" height="50%" style="display: block; margin: auto;" /></p>
+<pre><code>## 
+##  DHARMa nonparametric dispersion test via sd of residuals fitted vs.
+##  simulated
+## 
+## data:  simulationOutput
+## dispersion = 1.0825, p-value = 0.544
+## alternative hypothesis: two.sided</code></pre>
+</section>
+
+<section id="ml-and-optimization" class="title-slide slide level1">
+<h1>ML and Optimization</h1>
+<p>In order to find the parameter values that maximize the model
+likelihood optimizers are used. There are several of them. And the ones
+that are used by default may differ between the packages. Main
+optimizers used in R:</p>
+<ul>
+<li class="fragment">Nelder-Mead: a direct search algorithm, can be very
+slow, but often is very reliable.<br />
+</li>
+<li class="fragment">BFGS: a Quasi-Newton (Hessian-based)
+algorithm.<br />
+</li>
+<li class="fragment">L-BFGS-B: Limited memory-BFGS-Box constraint.<br />
+</li>
+<li class="fragment">nlminb: a Quasi-Newton (Hessian-based) algorithm
+that supports box constraints.<br />
+</li>
+<li class="fragment">bobyqa: Bound Optimization by Quadratic
+Approximation, a quadratic approximation algorithm that supports box
+constraints.</li>
+</ul>
+</section>
+
+<section id="more-on-optimizers" class="title-slide slide level1">
+<h1>More on optimizers</h1>
+<ul>
+<li class="fragment">No single best optimizer exists.<br />
+Possible reasons why an optimizer fails:<br />
+</li>
+<li class="fragment">iterations can reach a singular gradient and will
+stop<br />
+</li>
+<li class="fragment">iterations can exceed the maximum number of
+iterations without converging (can be dealt with my increasing the
+number of iterations)</li>
+<li class="fragment">at least one of the variances is negative<br />
+</li>
+<li class="fragment">covariance matrix is not positive definite.<br />
+For more information see <code>lmerControl()</code>.</li>
+</ul>
+</section>
+
+<section id="checking-up" class="title-slide slide level1">
+<h1>Checking up</h1>
+<p><span style="color:orange"> - What if you have underdispersion?<br />
+- How to deal with overdispersion?<br />
+</span></p>
+</section>
+
+<section id="questions" class="title-slide slide level1">
+<h1>Questions?</h1>
+
+</section>
+
+<section id="literature" class="title-slide slide level1">
+<h1>Literature</h1>
+<span style = "font-size: 50%;">
+<ul style='text-align: left;'>
+<ul>
+<li class="fragment">Zuur AF, Ieno EN, Walker N, Saveliev AA, Smith GM
+2009. Mixed-Effects Models and Extensions in Ecology with R. New York,
+Springer New York: XXII, 574 p.<br />
+</li>
+<li class="fragment">Bolker BM, Brooks ME, Clark CJ, Geange SW, Poulsen
+JR, Stevens MHH, White J-SS (2008) Generalized linear mixed models: a
+practical guide for ecology and evolution. <em>Trends in Ecology and
+Evolution</em>, 24:3.<br />
+</li>
+<li class="fragment">Burnham KP, Anderson DR, Huyvaert KP (2011) AIC
+model selection and multimodel inference in behavioral ecology: some
+background, observations, and comparisons. <em>Behavioural Ecology and
+Sociobiology</em>, 65:23–35.<br />
+</li>
+<li class="fragment">Burnham KP &amp; Anderson DR (2002) Model Selection
+and Multimodel Inference: a practical information-theoretic approach.
+2nd Ed, New York, Springer-Verlag: 515 p.<br />
+</li>
+<li class="fragment">Anderson DR (2008) Model based inference in the
+life sciences: a primer on evidence. Springer, New York: 184 p.<br />
+</li>
+<li class="fragment">Faraway JJ (2006) Extending the Linear Model with
+R: Generalized Linear, Mixed Effects and Nonparametric Regression Models
+Chapman and Hall, New York, 345 p.<br />
+</li>
+<li class="fragment">Tredennik AT, Hooker G, Ellner SP, Adler PB (2021)
+A practical guide to selecting models for exploration, inference, and
+prediction in ecology. <em>Ecology</em>, 0:e03336.</span>
+</ul></li>
+</ul>
+</section>
+    </div>
+  </div>
+
+  <script src="04a_Lecture_AdvTopics_files/reveal.js-3.3.0.1/lib/js/head.min.js"></script>
+  <script src="04a_Lecture_AdvTopics_files/reveal.js-3.3.0.1/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: true,
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        slideNumber: true,
+        // Push each slide change to the browser history
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: false,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Opens links in an iframe preview overlay
+        previewLinks: true,
+        // Transition style
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+
+
+        // Optional reveal.js plugins
+        dependencies: [
+        ]
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>
