@@ -508,7 +508,7 @@ style.innerHTML = style_script;
 document.getElementsByTagName('head')[0].appendChild(style);
 </script>
 
-    <script src="04a_Lecture_AdvTopics_files/header-attrs-2.19/header-attrs.js"></script>
+    <script src="04a_Lecture_AdvTopics_files/header-attrs-2.20/header-attrs.js"></script>
 </head>
 <body>
   <div class="reveal">
@@ -548,10 +548,8 @@ pre[class] {
   max-height: 200px;
 }
 
-.scroll-100 {
-  max-height: 100px;
-  overflow-y: auto;
-  background-color: inherit;
+.reveal .reflist ul{
+  font-size: 26px;
 }
 </style>
 </section>
@@ -682,7 +680,7 @@ class="title-slide slide level1">
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##   2.ARphi 
-## 0.7604047 
+## 0.7604053 
 ##          --- Random-coefficients Cov matrices:
 ##    Group        Term     Var.  Corr.
 ##  Species (Intercept) 0.005561       
@@ -721,8 +719,8 @@ we should fit autocorrelation per study (since studies performed on
 different species / in different locations). To do it we use the syntax
 <code>AR1(ID|Year)</code>.<br />
 </li>
-<li class="fragment"><span style="color:orange">Trying fitting it. What
-do you get?</span></li>
+<li class="fragment"><span style="color:orange">Try fitting it. What do
+you get?</span></li>
 </ul>
 </section>
 
@@ -970,7 +968,7 @@ following normal distribution.<br />
 <section id="generalised-linear-mixed-effects-models"
 class="title-slide slide level1">
 <h1>Generalised Linear Mixed-Effects Models</h1>
-<p>Three components of the generalised linear model:</p>
+<p>Three components of a generalised linear model:</p>
 <ul>
 <li class="fragment">the distribution of the response variable,<br />
 </li>
@@ -1095,7 +1093,7 @@ class="math inline">\(var(Y) = \mu\)</span><br />
 <span class="math display">\[\eta = beta_0 + \beta_1 \times x_1 +  ... +
 \beta_p \times x_p\]</span><br />
 </li>
-<li class="fragment">Logarithmic link is used between the mena of Y and
+<li class="fragment">Logarithmic link is used between the mean of Y and
 the predictor <span class="math inline">\(\eta\)</span>:<br />
 <span class="math inline">\(log(\mu) = \eta\)</span><br />
 Then <span class="math inline">\(\mu = \exp(\eta)\)</span>, because
@@ -1117,7 +1115,7 @@ log-log)<br />
 <li class="fragment"><span class="math inline">\(Y\)</span> is
 Binomial-distributed with probability <span
 class="math inline">\(\pi\)</span> and <span
-class="math inline">\(n_i\)</span> = 1 independent trial.<br />
+class="math inline">\(n\)</span> independent trials.<br />
 </li>
 <li class="fragment">Systematic part:<br />
 <span class="math inline">\(\eta =beta_0 + \beta_1 \times x_1 + ... +
@@ -1311,8 +1309,7 @@ For more information see <code>lmerControl()</code>.</li>
 
 <section id="literature" class="title-slide slide level1">
 <h1>Literature</h1>
-<span style = "font-size: 50%;">
-<ul style='text-align: left;'>
+<div class="reflist">
 <ul>
 <li class="fragment">Zuur AF, Ieno EN, Walker N, Saveliev AA, Smith GM
 2009. Mixed-Effects Models and Extensions in Ecology with R. New York,
@@ -1344,6 +1341,7 @@ A practical guide to selecting models for exploration, inference, and
 prediction in ecology. <em>Ecology</em>, 0:e03336.</span>
 </ul></li>
 </ul>
+</div>
 </section>
     </div>
   </div>
