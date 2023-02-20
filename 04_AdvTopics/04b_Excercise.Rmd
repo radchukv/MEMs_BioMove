@@ -1,0 +1,33 @@
+---
+title: "Exercise: Troubleshooting GLMMs"
+author: "Radchuk Viktoriia"
+date: "2022-1-24"
+output:
+  html_document:
+    theme: default
+       
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(magrittr)
+```
+
+# Small exercise for you
+We encountered an issue about convergence when trying to fit the model without a quadratic effect of time since the begin of hibernation: "Warning in fitTMB(TMBStruc): Model convergence problem; singular convergence". Try to find the way to fit the model without any convergence issues.
+Compare the output of this model with the one we fitted during the lecture.
+
+
+_Some help:_     
+- Think what are the ways to deal with convergence issues.    
+- Some more help here: [glmmTMB_troubleshooting](https://cran.r-project.org/web/packages/glmmTMB/vignettes/troubleshooting.html )
+
+
+
+
+
+
+
+
+

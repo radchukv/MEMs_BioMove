@@ -1,0 +1,76 @@
+---
+title: "Exercise on troubleshooting: Solution"
+author: "Radchuk Viktoriia"
+date: "2022-1-22"
+output:
+  html_document:
+    theme: default
+       
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(ggplot2)
+library(lattice)
+library(glmmTMB)
+
+source(file = here::here('data', 'Prep_data.R'))   ## consider leaving out and directly loading df.Rda
+
+## load data on metabolic rates - in case above line does not work
+# load(file = here::here('data', 'df_metab_Dormice.Rda'))
+```
+
+# One possible solution for the exercise
+
+We work with the data on hibernating dormice
+
+We rescale the data for better model convergence. Feel free to try and fit the model without this step (I already did that) and see what happens. 
+``` {r model arousal prob, echo = TRUE, fig.align = 'center'}
+df <- df[! (is.na(df$HoursBegin) | is.na(df$Tamb)), ]
+min(df$HoursBegin)
+
+# coding year as a factor
+df$Y <- 2009
+df$Y[df$Year %in% c(2011, 2012)] <- 2011
+df$Y <- as.factor(df$Y)
+
+### rescaling time since hibernation and temperature for better convergence
+df$HoursScale <- (df$HoursBegin - mean(df$HoursBegin, na.rm = T)) / sd(df$HoursBegin, na.rm = T)
+df$HoursScale2 <- df$HoursScale^2
+hist(df$HoursScale, 
+     xlab = 'Standarized time since begin hibernation',
+     main = NULL, col = 'black')
+
+df$T_scale <- (df$Tamb - mean(df$Tamb, na.rm = T)) / sd(df$Tamb, na.rm = T)
+df$Tscale2 <- df$T_scale ^ 2
+hist(df$T_scale, xlab = 'Standardized temperature', 
+     main = NULL, col ='black')
+```
+
+
+## Fit a mixed-effects Binomial model 
+This is the model with autocorrelation, a quadratic effect of temperature, a linear effect of time since the beginning of hibernation, and an effect of year
+```{r noQuad, echo = TRUE}
+df$Time_fac <- as.factor(df$Timecon)
+
+modRandAR_no2Hour_prob <- glmmTMB(state ~ HoursScale + 
+                          T_scale + Tscale2 +
+                          Y + (1 | ID) +  ar1(Time_fac - 1|ID), 
+                         family = binomial,
+                         data=df)
+summary(modRandAR_no2Hour_prob)
+```
+
+## One way to solve the convergence issue 
+By using a different optimiser, we go with 'BFGS'
+```{r convergence issue, echo = TRUE}
+mod_BFGS <- update(modRandAR_no2Hour_prob, control=glmmTMBControl(optimizer=optim,
+                                       optArgs=list(method="BFGS")))
+summary(mod_BFGS)
+```
+
+
+# Questions?
+
+
