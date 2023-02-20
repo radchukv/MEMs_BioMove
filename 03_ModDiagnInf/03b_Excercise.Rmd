@@ -1,0 +1,33 @@
+---
+title: "Exercise: Diagnostics & Inference with LMMs"
+author: "Radchuk Viktoriia"
+date: "2022-1-20"
+output:
+  html_document:
+    theme: default
+       
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+```
+
+# Your turn
+Now please test the hypothesis 2 "No effect of temperature on metabolic rate of normothermic individuals is expected because they should be able to thermoregulate". Normothermic are called those individuals that are in 'aroused' state (remember, we have split the overall dataset into two parts, for those individuals who are in torpor and those that are aroused)
+Feel free to use the package you prefer to:
+
+- fit the appropriate model to test the hypothesis with these data      
+- conduct model diagnostics prior to making inference             
+- <span style= "color:orange">BONUS: (if needed!) produce the predictions with the fitted models and plot them.</span>    
+
+
+
+
+
+
+
+
+

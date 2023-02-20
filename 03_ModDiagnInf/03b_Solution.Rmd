@@ -1,0 +1,188 @@
+---
+title: "Solution: testing hypothesis 2 with the data on dormice"
+author: "Radchuk Viktoriia"
+date: "2022-1-5"
+output:
+  html_document:
+    theme: default
+       
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+library(glmmTMB)
+library(car)
+library(DHARMa)
+
+source(file = here::here('data', 'Prep_data.R'))   
+```
+
+# Hypothesis
+- No effect of temperature on metabolic rate of normothermic individuals is expected because they should be able to thermoregulate
+
+
+# Read in and prepare the data
+
+
+```{r data prep, echo = TRUE}
+df$Log_MR <- log(df$MR_h)
+df$Tamb2 <- df$Tamb^2
+df$Y <- 2009
+df$Y[df$Year %in% c(2011, 2012)] <- 2011
+df$Y <- as.factor(df$Y)
+df$ID <- as.factor(df$ID)
+```
+
+
+``` {r split per state, echo = TRUE, fig.align = 'center'}
+## just use the subset of the data with the individuals in state == 1 (aroused)
+aroused <- df[df$state == 1, ]
+
+nrow(aroused)  ### 2765
+
+hist(aroused$Month)  
+xyplot(Log_MR ~ Tamb|ID, data = aroused, xlab = expression('Ambient temperature, ' ~degree~C), ylab = 'Log metabolic rate')
+
+# exclude missing values 
+aroused <- aroused[!is.na(aroused$Log_MR), ]
+```
+
+## Mixed-effects model with ID as random intercept
+I will use glmmTMB here but you may have chosen a different R package 
+``` {r  arousal ME randI, echo = TRUE}
+modRandID_arous <- glmmTMB(Log_MR ~ Tamb  + Y + (1|ID), 
+                        data = aroused)
+summary(modRandID_arous)
+```
+
+## Model diagnostics 
+Using DHARMa directly.  
+
+```{r moddiagn RInt, echo = TRUE, fig.align='center'}
+sim <- simulateResiduals(modRandID_arous, plot = T)  
+testUniformity(sim, plot = F)
+testQuantiles(sim, plot = T)
+
+# plot residuals vs our predictors
+plotResiduals(sim, form = aroused$Tamb)
+plotResiduals(sim, form = aroused$Y)
+```
+<span style="color:orange"> How do we interpret these plots? </span>
+
+Let us test for temporal autocorrelation, since the measurements were taken over time for each individual.     
+```{r autocor RIntMod, echo = TRUE, fig.align='center'}
+sim_ID10 <- recalculateResiduals(sim, sel = aroused$ID == 10)
+testTemporalAutocorrelation(sim_ID10, time = aroused$Timecon[aroused$ID == '10'])
+
+```
+
+
+```{r fun testAutocor, echo = FALSE}
+fun_autocor <- function(simulatedObj, data, ID){
+sim_subset <- recalculateResiduals(simulatedObj, sel = data$ID == ID)
+testAut <- testTemporalAutocorrelation(sim_subset, time = data$Timecon[data$ID == ID], plot = F)
+return(list(testAut, data.frame(DurbW = testAut$statistic, p = testAut$p.value, ID = ID)))  
+}
+
+```
+
+Using the same function we used in the lecture to test temporal autocorrelation for each individual in the dataset. 
+```{r use fun testAutocor, echo = TRUE, fig.align='center', out.width= '60%'}
+levels(aroused$ID)
+fun_autocor(sim, aroused, ID = '10')
+
+```
+
+
+### Test autocorrelation in all studies
+```{r testAutocor All Stud, echo = TRUE}
+dat_autoc <- data.frame(DurbW =numeric(), p = numeric())
+dat_autoc <- rbind(dat_autoc, fun_autocor(sim, aroused, 10)[[2]])
+for(i in unique(aroused$ID)[-1]){
+  dat_autoc <- rbind(dat_autoc, fun_autocor(sim, aroused, ID = i)[[2]])
+}
+
+length(levels(aroused$ID))  
+dat_autoc$sign <- ifelse(dat_autoc$p < 0.05,'Yes','No')
+sum(dat_autoc$sign == 'Yes')
+sum(dat_autoc$sign == 'Yes')/length(levels(aroused$ID))
+```
+So, temporal autocorrelation is an issue here.    
+
+
+## Mixed-effects model accounting for temporal autocorrelation
+``` {r  arousal ME randI autocor, echo = TRUE}
+aroused$Time_fac <- as.factor(aroused$Timecon)
+modRandID_arousAR <- glmmTMB(Log_MR ~ Tamb + Y + (1|ID) +
+                             ar1(Time_fac - 1|ID), 
+                        data = aroused)
+summary(modRandID_arousAR)
+```
+
+## Model diagnostics 
+Remember we need to rotate the residuals otherwise there is no point looking at the diagnostics (the autocorrealtion will still be there in the residual structure)
+
+This takes long time, run it in your free time.
+```{r moddiagn RIntAR1, echo = TRUE, eval = FALSE}
+## Do not run
+simAR1_rot <- simulateResiduals(modRandID_arousAR, plot = T, rotation = 'estimated')
+testUniformity(simAR1_rot, plot = F)
+testQuantiles(simAR1_rot, plot = T)
+# plot residuals vs our predictors
+plotResiduals(simAR1_rot, form = aroused$Tamb)
+plotResiduals(simAR1_rot, form = aroused$Y)
+```
+<span style="color:orange"> How do we interpret these plots? </span>
+
+# Model inference
+Interpreting the results of the model  (assuming that the model diagnostics were fine, first make sure to run the diagnostics in full!).    
+We use LRT to test the significance of the linear effect of temperature on metabolic rate in normothermic individuals. 
+
+``` {r  torpor LRT ML, echo = TRUE}
+modRandID_arous_noT <- glmmTMB(Log_MR ~ Y + (1|ID) +
+                                 ar1(Time_fac - 1|ID), 
+                        data = aroused)
+summary(modRandID_arous_noT)
+
+## pay attention: we by default fitted models with ML so we can run LRT to test the significance of the fixed effect
+
+anova(modRandID_arous_noT, modRandID_arousAR)  ## significant effect
+```
+<span style="color:orange"> Do we find support for our hypothesis? </span>
+
+# Plot predictions
+```{r newDat, echo = TRUE, fig.align='center'}
+min(aroused$Tamb)
+new_dat <- expand.grid('ID' = unique(aroused$ID), 
+                       'Y' = unique(aroused$Y),
+                       'Tamb' = seq(from = min(aroused$Tamb), to = 
+                                    max(aroused$Tamb), length.out = 20))
+
+head(new_dat)
+
+new_dat$Time_fac <- as.factor(rep('10', nrow(new_dat)))  ## keeping just to one time point
+new_dat$pred_fixTMB <- predict(modRandID_arousAR, newdata = new_dat, re.form = NA, type = 'response')
+
+ggplot(data = new_dat, aes(x = Tamb, y = pred_fixTMB)) +
+  geom_point() + theme_bw() +
+  facet_grid(cols = vars(Y)) +
+  xlab('Ambient temperature') + ylab('Metabolic rate')
+```
+
+Adding confidence intervals to the plots
+```{r pred with CI, echo = TRUE, fig.align='center'}
+new_dat$pre_SE_fixTMB <- predict(modRandID_arousAR, newdata = new_dat, re.form = NA, se.fit = TRUE, type = 'response')$se.fit 
+new_dat$pred_upper_fix <- new_dat$pred_fixTMB + qnorm(0.975)*new_dat$pre_SE_fixTMB 
+new_dat$pred_lower_fix <- new_dat$pred_fixTMB - qnorm(0.975)*new_dat$pre_SE_fixTMB 
+head(new_dat)
+ggplot(data = new_dat, aes(x = Tamb, y = pred_fixTMB)) +
+  theme_bw() + facet_grid(cols = vars(Y)) +
+  geom_ribbon(data = new_dat, aes(x = Tamb, ymin = pred_lower_fix, ymax = pred_upper_fix), alpha = 0.4) +
+  geom_line(lty  = 3) +
+    xlab('Ambient temperature') + ylab('Metabolic rate')
+```
+
+
