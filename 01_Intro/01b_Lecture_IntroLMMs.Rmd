@@ -37,12 +37,10 @@ output:
 pre[class] {
   max-height: 100px;
 }
-
-.scroll-100 {
-  max-height: 100px;
-  overflow-y: auto;
-  background-color: inherit;
+.reveal .reflist ul{
+  font-size: 26px;
 }
+
 ```
 
 
@@ -180,12 +178,12 @@ You may see such terms:
 
 
 # Literature
-<span style = "font-size: 90%;">
-<ul style='text-align: left;'> 
+::: {.reflist}
+
 - Zuur AF, Ieno EN, Walker N, Saveliev AA, Smith GM (2009) Mixed-Effects Models and Extensions in Ecology with R. New York, Springer New York: XXII, 574 p.   
 - Faraway JJ 2006. Extending the Linear Model with R: Generalized Linear, Mixed Effects and Nonparametric Regression Models  Chapman and Hall, New York, 345 p.</span></ul>   
 
-
+:::
 
 
 

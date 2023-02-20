@@ -40,10 +40,8 @@ pre[class] {
   max-height: 100px;
 }
 
-.scroll-100 {
-  max-height: 100px;
-  overflow-y: auto;
-  background-color: inherit;
+.reveal .reflist ul{
+  font-size: 26px;
 }
 ```
 
@@ -694,13 +692,13 @@ Best linear unbiased predictors (BLUP) | Fitted values for specific random effec
 
 
 # Literature
-<span style = "font-size: 80%;">
-<ul style='text-align: left;'> 
+::: {.reflist}
 - Zuur AF, Ieno EN, Walker N, Saveliev AA, Smith GM (2009) Mixed-Effects Models and Extensions in Ecology with R. New York, Springer New York: XXII, 574 p.   
 - Bates D, Maechler M, Bolker BM, Walker SC (2014) Fitting Linear Mixed-Effects Models Using lme4. _arXiv_: 1406.5823v1.   
 - Faraway JJ 2006. Extending the Linear Model with R: Generalized Linear, Mixed Effects and Nonparametric Regression Models  Chapman and Hall, New York, 345 p.   
 - Schielzeth H, Dingemanse NJ, Nakagawa S, Westneat DF, Allegue H, Teplitsky C, Reale D, Dochtermann NA, Garamszegi LZ, Araya-Ajoy YG (2020) Robustness of linear mixed-effects models to violations of distributional assumptions. _Methods in Ecology and Evolution_, 11:1141–1152.  
 - <span style = "color:blue">Code for simulating the data is inspired by a session at the IZW Stats Meeting given my Alex Courtiol some years ago</span></ul>
 
+:::
 
 
