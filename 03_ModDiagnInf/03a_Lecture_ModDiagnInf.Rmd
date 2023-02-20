@@ -40,10 +40,8 @@ pre[class] {
   max-height: 200px;
 }
 
-.scroll-100 {
-  max-height: 100px;
-  overflow-y: auto;
-  background-color: inherit;
+.reveal .reflist ul{
+  font-size: 26px;
 }
 ```
 
@@ -261,7 +259,7 @@ testUniformity(sim, plot = F)
 
 
 # Test of outliers
-<span style = font-size:70%;"> - `testOutliers()` tests if the number of outliers outside of the simulation envelope is larger or smaller than expected (uses bootstrap or can rely on binomial test, specified with the option `type=`)</span>
+<span style = font-size:70%;"> - `testOutliers()` tests if the number of outliers outside of the simulation envelope is larger or smaller than expected (uses bootstrap or can rely on binomial test, specified with the option "type=")</span>
 ```{r testsOutl, echo = TRUE, fig.align='center', out.width='30%'}
 testOutliers(sim)
 
@@ -553,9 +551,8 @@ abline(v = 4, col = 'red')
 
 # Checking up
 
-<span style = "color:orange;">
-- Why are we using log-Likelihood and not Likelihood itself?       
-- What is model inference?</span>
+- <span style = "color:orange;">Why are we using log-Likelihood and not Likelihood itself?       
+- <span style = "color:orange;">What is model inference?</span>
 
 # Work flow 
 - Formulate research question    
@@ -572,13 +569,14 @@ abline(v = 4, col = 'red')
 
 
 # Literature   
-<span style = "font-size: 80%;">
-<ul style='text-align: left;'> 
+::: {.reflist}
+
 - Zuur AF, Ieno EN, Walker N, Saveliev AA, Smith GM (2009) Mixed-Effects Models and Extensions in Ecology with R. New York, Springer New York: XXII, 574 p.   
 - Schielzeth H, Dingemanse NJ, Nakagawa S, Westneat DF, Allegue H, Teplitsky C, Reale D, Dochtermann NA, Garamszegi LZ, Araya-Ajoy YG (2020) Robustness of linear mixed-effects models to violations of distributional assumptions. _Methods in Ecology and Evolution_, 11:1141–1152.     
 - Bolker BM, Brooks ME, Clark CJ, Geange SW, Poulsen JR, Stevens MHH,  White J-SS (2008) Generalized linear mixed models: a practical guide for ecology and evolution. _Trends in Ecology and Evolution_, 24:3.     
 - Grilli L and Rampichini C (2014) Specification of random effects in multilevel models: a review. _Quality and Quality_, DOI: 10.1007/s11135-014-0060-5.    
-- Tredennik AT, Hooker G, Ellner SP, Adler PB (2021) A practical guide to selecting models for exploration, inference, and prediction in ecology. _Ecology_, 0:e03336.</span></ul>
+- Tredennik AT, Hooker G, Ellner SP, Adler PB (2021) A practical guide to selecting models for exploration, inference, and prediction in ecology. _Ecology_, 0:e03336.
 
+:::
 
 

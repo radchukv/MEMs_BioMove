@@ -508,7 +508,7 @@ style.innerHTML = style_script;
 document.getElementsByTagName('head')[0].appendChild(style);
 </script>
 
-    <script src="03a_Lecture_ModDiagnInf_files/header-attrs-2.19/header-attrs.js"></script>
+    <script src="03a_Lecture_ModDiagnInf_files/header-attrs-2.20/header-attrs.js"></script>
 </head>
 <body>
   <div class="reveal">
@@ -549,10 +549,8 @@ pre[class] {
   max-height: 200px;
 }
 
-.scroll-100 {
-  max-height: 100px;
-  overflow-y: auto;
-  background-color: inherit;
+.reveal .reflist ul{
+  font-size: 26px;
 }
 </style>
 </section>
@@ -930,7 +928,7 @@ distributed.</li>
 <p><span style="font-size:70%;&quot;"> - <code>testOutliers()</code>
 tests if the number of outliers outside of the simulation envelope is
 larger or smaller than expected (uses bootstrap or can rely on binomial
-test, specified with the option <code>type=</code>)</span></p>
+test, specified with the option “type=”)</span></p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testOutliers</span>(sim)</span></code></pre></div>
 <p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/testsOutl-1.png" width="30%" style="display: block; margin: auto;" /></p>
 <pre><code>## 
@@ -997,7 +995,7 @@ specified), and tests if this conforms to the expected quantile</p>
 class="title-slide slide level1">
 <h1>Plot residuals vs predictor</h1>
 <div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plotResiduals</span>(sim, <span class="at">form =</span> dat_fac<span class="sc">$</span>det_Clim)</span></code></pre></div>
-<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/ResvsPred-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<p><img src="03a_Lecture_ModDiagnInf_files/figure-revealjs/resVSpred-1.png" width="60%" style="display: block; margin: auto;" /></p>
 </section>
 
 <section id="test-of-temporal-autocorrelation"
@@ -1359,9 +1357,13 @@ deviance with that value. So we will reject the null hypothesis (under
 
 <section id="checking-up" class="title-slide slide level1">
 <h1>Checking up</h1>
-<p><span style="color:orange;"> - Why are we using log-Likelihood and
-not Likelihood itself?<br />
-- What is model inference?</span></p>
+<ul>
+<li class="fragment"><span style = "color:orange;">Why are we using
+log-Likelihood and not Likelihood itself?<br />
+</li>
+<li class="fragment"><span style="color:orange;">What is model
+inference?</span></li>
+</ul>
 </section>
 
 <section id="work-flow" class="title-slide slide level1">
@@ -1390,8 +1392,7 @@ not Likelihood itself?<br />
 
 <section id="literature" class="title-slide slide level1">
 <h1>Literature</h1>
-<span style = "font-size: 80%;">
-<ul style='text-align: left;'>
+<div class="reflist">
 <ul>
 <li class="fragment">Zuur AF, Ieno EN, Walker N, Saveliev AA, Smith GM
 (2009) Mixed-Effects Models and Extensions in Ecology with R. New York,
@@ -1414,9 +1415,9 @@ Quality</em>, DOI: 10.1007/s11135-014-0060-5.<br />
 </li>
 <li class="fragment">Tredennik AT, Hooker G, Ellner SP, Adler PB (2021)
 A practical guide to selecting models for exploration, inference, and
-prediction in ecology. <em>Ecology</em>, 0:e03336.</span>
-</ul></li>
+prediction in ecology. <em>Ecology</em>, 0:e03336.</li>
 </ul>
+</div>
 </section>
     </div>
   </div>
